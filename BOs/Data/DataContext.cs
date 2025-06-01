@@ -25,6 +25,7 @@ namespace BOs.Data
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Class> Classes { get; set; }
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer(GetConnectionString());
@@ -43,7 +44,7 @@ namespace BOs.Data
             {
                 entity.ToTable("Role");
 
-                entity.HasKey(r => r.RoleId);
+                entity.HasKey(r => r.RoleID);
 
                 entity.Property(r => r.RoleName)
                       .IsRequired()
@@ -52,12 +53,12 @@ namespace BOs.Data
 
                 entity.HasMany(r => r.Accounts)
                       .WithOne(a => a.Role)
-                      .HasForeignKey(a => a.RoleId);
+                      .HasForeignKey(a => a.RoleID);
 
                 entity.HasData(
-                    new Role { RoleId = 1, RoleName = "Admin" },
-                    new Role { RoleId = 2, RoleName = "Nurse" },
-                    new Role { RoleId = 3, RoleName = "Parent" }
+                    new Role { RoleID = 1, RoleName = "Admin" },
+                    new Role { RoleID = 2, RoleName = "Nurse" },
+                    new Role { RoleID = 3, RoleName = "Parent" }
                 );
             });
             #endregion
@@ -67,7 +68,7 @@ namespace BOs.Data
             {
                 entity.ToTable("Account");
 
-                entity.HasKey(a => a.AccountId);
+                entity.HasKey(a => a.AccountID);
 
                 entity.Property(a => a.Email)
                       .IsRequired()
@@ -79,13 +80,19 @@ namespace BOs.Data
                       .HasMaxLength(255)
                       .IsUnicode(false);
 
-                entity.Property(a => a.Name)
+                entity.Property(a => a.Fullname)
                       .IsRequired()
                       .HasMaxLength(150)
                       .IsUnicode(true);
 
-                entity.Property(a => a.Phone)
-                      .HasColumnType("varchar(20)");
+                entity.Property(a => a.Address)
+                      .IsRequired()
+                      .HasMaxLength(1000)
+                      .IsUnicode(true);
+
+                entity.Property(a => a.PhoneNumber)
+                      .HasMaxLength(15);
+
 
                 entity.Property(a => a.DateOfBirth).IsRequired();
                 entity.Property(a => a.CreatedAt).IsRequired();
@@ -153,6 +160,25 @@ namespace BOs.Data
                 entity.HasOne(s => s.Class)
                       .WithMany(c => c.Students)
                       .HasForeignKey(s => s.ClassId);
+            });
+            #endregion
+
+            #region PasswordResetToken
+            modelBuilder.Entity<PasswordResetToken>(entity =>
+            {
+                entity.ToTable("PasswordResetToken");
+                entity.HasKey(e => e.PasswordResetTokenID);
+                entity.Property(e => e.PasswordResetTokenID).ValueGeneratedOnAdd();
+                entity.Property(e => e.Token)
+                      .IsRequired()
+                      .HasMaxLength(255);
+                entity.Property(e => e.Expiration).IsRequired();
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETDATE()");
+
+                entity.HasOne(e => e.Account)
+                      .WithMany(a => a.PasswordResetTokens)
+                      .HasForeignKey(e => e.AccountID)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
             #endregion
 

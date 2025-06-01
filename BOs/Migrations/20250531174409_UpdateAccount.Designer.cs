@@ -4,6 +4,7 @@ using BOs.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BOs.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250531174409_UpdateAccount")]
+    partial class UpdateAccount
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -99,37 +102,6 @@ namespace BOs.Migrations
                     b.HasKey("ClassId");
 
                     b.ToTable("Class", (string)null);
-                });
-
-            modelBuilder.Entity("BOs.Models.PasswordResetToken", b =>
-                {
-                    b.Property<int>("PasswordResetTokenID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PasswordResetTokenID"));
-
-                    b.Property<int>("AccountID")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
-                    b.Property<DateTime>("Expiration")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.HasKey("PasswordResetTokenID");
-
-                    b.HasIndex("AccountID");
-
-                    b.ToTable("PasswordResetToken", (string)null);
                 });
 
             modelBuilder.Entity("BOs.Models.Role", b =>
@@ -232,17 +204,6 @@ namespace BOs.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("BOs.Models.PasswordResetToken", b =>
-                {
-                    b.HasOne("BOs.Models.Account", "Account")
-                        .WithMany("PasswordResetTokens")
-                        .HasForeignKey("AccountID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Account");
-                });
-
             modelBuilder.Entity("BOs.Models.Student", b =>
                 {
                     b.HasOne("BOs.Models.Class", "Class")
@@ -263,8 +224,6 @@ namespace BOs.Migrations
 
             modelBuilder.Entity("BOs.Models.Account", b =>
                 {
-                    b.Navigation("PasswordResetTokens");
-
                     b.Navigation("Students");
                 });
 

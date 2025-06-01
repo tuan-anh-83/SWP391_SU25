@@ -59,10 +59,12 @@ builder.Services.AddSwaggerGen(c =>
 
 // Repositories
 builder.Services.AddScoped<IAccountRepo, AccountRepo>();
+builder.Services.AddScoped<IStudentRepo, StudentRepo>();
 
 
 // Services
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IPasswordHasher<Account>, PasswordHasher<Account>>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddSingleton<ITokenService, TokenService>();

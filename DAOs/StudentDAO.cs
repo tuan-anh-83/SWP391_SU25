@@ -34,6 +34,7 @@ namespace DAOs
         public async Task<Student?> GetStudentByCodeAsync(string studentCode)
         {
             return await _context.Students
+                                 .Include(s => s.Class) 
                                  .FirstOrDefaultAsync(s => s.StudentCode == studentCode);
         }
 
@@ -50,6 +51,7 @@ namespace DAOs
 
             return await _context.SaveChangesAsync() > 0;
         }
+
     }
 
 }

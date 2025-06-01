@@ -41,5 +41,32 @@ namespace SWP391_BE.Controllers
 
             return StatusCode(500, "Failed to link student to parent.");
         }
+
+        [HttpGet("student-info/{studentCode}")]
+        [Authorize(Roles = "Parent")]
+        public async Task<IActionResult> GetStudentInfo(string studentCode)
+        {
+            if (string.IsNullOrWhiteSpace(studentCode))
+                return BadRequest("Student code is required.");
+
+            var student = await _studentService.GetStudentByCodeAsync(studentCode);
+
+            if (student == null)
+                return NotFound("Student not found.");
+
+            if (student.ParentId != null)
+                return Conflict("This student is already linked to a parent.");
+
+            var studentInfo = new StudentPreviewDto
+            {
+                Fullname = student.Fullname,
+                StudentCode = student.StudentCode,
+                Gender = student.Gender,
+                DateOfBirth = student.DateOfBirth,
+                ClassName = student.Class?.ClassName ?? "Unknown"
+            };
+
+            return Ok(studentInfo);
+        }
     }
 }

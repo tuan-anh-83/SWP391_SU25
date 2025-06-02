@@ -25,6 +25,8 @@ namespace BOs.Data
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Class> Classes { get; set; }
+        public DbSet<Blog> Blogs { get; set; }
+        public DbSet<Category> Categories { get; set; }
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -181,6 +183,61 @@ namespace BOs.Data
                       .OnDelete(DeleteBehavior.Cascade);
             });
             #endregion
+
+            #region Category
+            modelBuilder.Entity<Category>(entity =>
+            {
+                entity.ToTable("Category");
+
+                entity.HasKey(c => c.CategoryID);
+
+                entity.Property(c => c.Name)
+                      .IsRequired()
+                      .HasMaxLength(100)
+                      .IsUnicode(true);
+
+                entity.HasMany(c => c.Blogs)
+                      .WithOne(b => b.Category)
+                      .HasForeignKey(b => b.CategoryID);
+            });
+            #endregion
+
+            #region Blog
+            modelBuilder.Entity<Blog>(entity =>
+            {
+                entity.ToTable("Blog");
+
+                entity.HasKey(b => b.BlogID);
+
+                entity.Property(b => b.Title)
+                      .IsRequired()
+                      .HasMaxLength(255)
+                      .IsUnicode(true);
+
+                entity.Property(b => b.Description)
+                      .HasMaxLength(500)
+                      .IsUnicode(true);
+
+                entity.Property(b => b.Content)
+                      .IsRequired()
+                      .IsUnicode(true);
+
+                entity.Property(b => b.Image)
+                      .HasColumnType("varbinary(max)")  // Dữ liệu nhị phân lớn
+                      .IsRequired(false);
+
+                entity.HasOne(b => b.Account)
+                      .WithMany() // Nếu bạn có List<Blog> trong Account thì sửa thành .WithMany(a => a.Blogs)
+                      .HasForeignKey(b => b.AccountID)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(b => b.Category)
+                      .WithMany(c => c.Blogs)
+                      .HasForeignKey(b => b.CategoryID)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+            #endregion
+
 
             OnModelCreatingPartial(modelBuilder);
         }

@@ -60,6 +60,7 @@ builder.Services.AddSwaggerGen(c =>
 // Repositories
 builder.Services.AddScoped<IAccountRepo, AccountRepo>();
 builder.Services.AddScoped<IStudentRepo, StudentRepo>();
+builder.Services.AddScoped<IBlogRepo, BlogRepo>();
 
 
 // Services
@@ -68,6 +69,7 @@ builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IPasswordHasher<Account>, PasswordHasher<Account>>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddSingleton<ITokenService, TokenService>();
+builder.Services.AddScoped<IBlogService, BlogService>();
 
 
 
@@ -129,6 +131,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
 });
 
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 app.UseStaticFiles();

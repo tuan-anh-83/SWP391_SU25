@@ -61,7 +61,7 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddScoped<IAccountRepo, AccountRepo>();
 builder.Services.AddScoped<IStudentRepo, StudentRepo>();
 builder.Services.AddScoped<IBlogRepo, BlogRepo>();
-
+builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
 
 // Services
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -70,6 +70,7 @@ builder.Services.AddScoped<IPasswordHasher<Account>, PasswordHasher<Account>>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddSingleton<ITokenService, TokenService>();
 builder.Services.AddScoped<IBlogService, BlogService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 
 

@@ -96,8 +96,8 @@ namespace SWP391_BE.Controllers
                     Weight = request.Weight
                 };
 
-                var createdRecord = await _healthRecordService.CreateHealthRecord(healthRecord);
-                return CreatedAtAction(nameof(GetHealthRecordById), new { id = createdRecord.HealthRecordId }, createdRecord);
+                var result = await _healthRecordService.CreateHealthRecord(healthRecord);
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -132,8 +132,8 @@ namespace SWP391_BE.Controllers
                 existingRecord.Height = request.Height;
                 existingRecord.Weight = request.Weight;
 
-                await _healthRecordService.UpdateHealthRecord(existingRecord);
-                return NoContent();
+               var result = await _healthRecordService.UpdateHealthRecord(existingRecord);
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -143,7 +143,7 @@ namespace SWP391_BE.Controllers
 
         // DELETE: api/HealthRecord/5
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Parent")]
         public async Task<IActionResult> DeleteHealthRecord(int id)
         {
             try
@@ -153,7 +153,7 @@ namespace SWP391_BE.Controllers
                 {
                     return NotFound(new { message = "Health record not found" });
                 }
-                return NoContent();
+                return Ok(result);
             }
             catch (Exception ex)
             {

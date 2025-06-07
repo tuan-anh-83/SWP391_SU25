@@ -28,6 +28,7 @@ namespace BOs.Data
         public DbSet<Blog> Blogs { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
+        public DbSet<HealthRecord> HealthRecords { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer(GetConnectionString());
@@ -235,6 +236,46 @@ namespace BOs.Data
                       .WithMany(c => c.Blogs)
                       .HasForeignKey(b => b.CategoryID)
                       .OnDelete(DeleteBehavior.Cascade);
+            });
+            #endregion
+
+            #region HealthRecord
+            modelBuilder.Entity<HealthRecord>(entity =>
+            {
+                entity.ToTable("HealthRecord");
+
+                entity.HasKey(h => h.HealthRecordId);
+
+                entity.Property(h => h.StudentName)
+                      .IsRequired()
+                      .HasMaxLength(200)
+                      .IsUnicode(true);
+
+                entity.Property(h => h.StudentCode)
+                      .IsRequired()
+                      .HasMaxLength(50)
+                      .IsUnicode(false);
+
+                entity.Property(h => h.Gender)
+                      .IsRequired()
+                      .HasMaxLength(10)
+                      .IsUnicode(false);
+
+                entity.Property(h => h.DateOfBirth).IsRequired();
+                entity.Property(h => h.Height).IsRequired();
+                entity.Property(h => h.Weight).IsRequired();
+                entity.Property(h => h.BMI).IsRequired();
+                entity.Property(h => h.NutritionStatus).IsRequired();
+
+                entity.HasOne(h => h.Student)
+                      .WithMany()
+                      .HasForeignKey(h => h.StudentId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(h => h.Parent)
+                      .WithMany()
+                      .HasForeignKey(h => h.ParentId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
             #endregion
 

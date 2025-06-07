@@ -163,6 +163,67 @@ namespace BOs.Migrations
                     b.ToTable("Class", (string)null);
                 });
 
+            modelBuilder.Entity("BOs.Models.HealthRecord", b =>
+                {
+                    b.Property<int>("HealthRecordId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HealthRecordId"));
+
+                    b.Property<double>("BMI")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(10)");
+
+                    b.Property<double>("Height")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NutritionStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ParentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StudentCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StudentName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<double>("Weight")
+                        .HasColumnType("float");
+
+                    b.HasKey("HealthRecordId");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("HealthRecord", (string)null);
+                });
+
             modelBuilder.Entity("BOs.Models.PasswordResetToken", b =>
                 {
                     b.Property<int>("PasswordResetTokenID")
@@ -311,6 +372,25 @@ namespace BOs.Migrations
                     b.Navigation("Account");
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("BOs.Models.HealthRecord", b =>
+                {
+                    b.HasOne("BOs.Models.Account", "Parent")
+                        .WithMany()
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BOs.Models.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Parent");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("BOs.Models.PasswordResetToken", b =>

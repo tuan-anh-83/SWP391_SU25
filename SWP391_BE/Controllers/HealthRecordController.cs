@@ -121,7 +121,7 @@ namespace SWP391_BE.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-
+               
                 var existingRecord = await _healthRecordService.GetHealthRecordById(id);
                 if (existingRecord == null)
                 {
@@ -131,7 +131,7 @@ namespace SWP391_BE.Controllers
                 existingRecord.Note = request.Note;
                 existingRecord.Height = request.Height;
                 existingRecord.Weight = request.Weight;
-
+                existingRecord.DateOfBirth = request.DateOfBirth;
                var result = await _healthRecordService.UpdateHealthRecord(existingRecord);
                 return Ok(result);
             }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BOs.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250607024458_addDb")]
-    partial class addDb
+    [Migration("20250608034526_database")]
+    partial class database
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -220,9 +220,10 @@ namespace BOs.Migrations
 
                     b.HasKey("HealthRecordId");
 
-                    b.HasIndex("ParentId");
-
                     b.HasIndex("StudentId");
+
+                    b.HasIndex("ParentId", "StudentId")
+                        .IsUnique();
 
                     b.ToTable("HealthRecord", (string)null);
                 });

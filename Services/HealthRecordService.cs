@@ -109,9 +109,13 @@ namespace Services
                 {
                     throw new ArgumentException("Height and weight must be greater than 0");
                 }
+                if (height >= 200 || weight >= 200)
+                {
+                    throw new ArgumentException("Height and weight must be less than 200");
+                }
 
                 // Convert height from cm to meters if needed
-                double heightInMeters = height > 3 ? height / 100 : height;
+                double heightInMeters = height / 100 ;
                 
                 // Calculate BMI: weight (kg) / (height (m) * height (m))
                 double bmi = weight / (heightInMeters * heightInMeters);

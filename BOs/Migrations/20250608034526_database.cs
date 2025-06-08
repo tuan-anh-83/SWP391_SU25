@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BOs.Migrations
 {
     /// <inheritdoc />
-    public partial class addDb : Migration
+    public partial class database : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -225,9 +225,10 @@ namespace BOs.Migrations
                 column: "CategoryID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_HealthRecord_ParentId",
+                name: "IX_HealthRecord_ParentId_StudentId",
                 table: "HealthRecord",
-                column: "ParentId");
+                columns: new[] { "ParentId", "StudentId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_HealthRecord_StudentId",

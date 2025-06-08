@@ -276,6 +276,7 @@ namespace BOs.Data
                       .WithMany()
                       .HasForeignKey(h => h.ParentId)
                       .OnDelete(DeleteBehavior.Restrict);
+                entity.HasIndex(hr => new { hr.ParentId, hr.StudentId }).IsUnique();
             });
             #endregion
 

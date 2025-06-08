@@ -217,9 +217,10 @@ namespace BOs.Migrations
 
                     b.HasKey("HealthRecordId");
 
-                    b.HasIndex("ParentId");
-
                     b.HasIndex("StudentId");
+
+                    b.HasIndex("ParentId", "StudentId")
+                        .IsUnique();
 
                     b.ToTable("HealthRecord", (string)null);
                 });

@@ -105,7 +105,7 @@
         }
 
         [HttpPut("UpdateBlog/{id}")]
-        [Authorize]
+        [Authorize(Roles = "Nurse,Admin")]
         public async Task<IActionResult> UpdateBlog(int id, [FromForm] BlogUpdateModel model)
         {
             var blog = await _blogService.GetBlogByIdAsync(id);
@@ -141,7 +141,7 @@
         }
 
         [HttpDelete("DeleteBlog/{id}")]
-        [Authorize]
+        [Authorize(Roles = "Nurse,Admin")]
         public async Task<IActionResult> DeleteBlog(int id)
         {
             var blog = await _blogService.GetBlogByIdAsync(id);

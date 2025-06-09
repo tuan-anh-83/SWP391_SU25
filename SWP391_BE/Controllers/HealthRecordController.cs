@@ -21,7 +21,7 @@ namespace SWP391_BE.Controllers
 
         // GET: api/HealthRecord
         [HttpGet]
-        [Authorize(Roles = "Admin,Teacher,Parent")]
+        [Authorize(Roles = "Admin,Parent")]
         public async Task<ActionResult<IEnumerable<HealthRecordResponseDTO>>> GetAllHealthRecords()
         {
             try
@@ -37,7 +37,7 @@ namespace SWP391_BE.Controllers
 
         // GET: api/HealthRecord/5
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin,Teacher,Parent")]
+        [Authorize(Roles = "Admin,Parent")]
         public async Task<ActionResult<HealthRecordResponseDTO>> GetHealthRecordById(int id)
         {
             try
@@ -57,7 +57,7 @@ namespace SWP391_BE.Controllers
 
         // GET: api/HealthRecord/student/5
         [HttpGet("student/{studentId}")]
-        [Authorize(Roles = "Admin,Teacher,Parent")]
+        [Authorize(Roles = "Admin,Parent")]
         public async Task<ActionResult<IEnumerable<HealthRecordResponseDTO>>> GetHealthRecordsByStudentId(int studentId)
         {
             try
@@ -73,7 +73,7 @@ namespace SWP391_BE.Controllers
 
         // POST: api/HealthRecord
         [HttpPost]
-        [Authorize(Roles = "Admin,Parent")]
+        [Authorize(Roles = "Parent")]
         public async Task<ActionResult<HealthRecordResponseDTO>> CreateHealthRecord(CreateHealthRecordRequestDTO request)
         {
             try
@@ -107,7 +107,7 @@ namespace SWP391_BE.Controllers
 
         // PUT: api/HealthRecord/5
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,Parent")]
+        [Authorize(Roles = "Parent")]
         public async Task<IActionResult> UpdateHealthRecord(int id, UpdateHealthRecordRequestDTO request)
         {
             try

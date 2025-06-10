@@ -29,6 +29,8 @@ namespace BOs.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
         public DbSet<HealthRecord> HealthRecords { get; set; }
+        public DbSet<MedicalEvent> MedicalEvents { get; set; }
+        public DbSet<Medication> Medications { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer(GetConnectionString());
@@ -280,6 +282,75 @@ namespace BOs.Data
             });
             #endregion
 
+            #region Medication      
+            modelBuilder.Entity<Medication>(entity =>
+            {
+                entity.ToTable("Medication");
+
+                entity.HasKey(m => m.MedicationId);
+
+                entity.Property(m => m.Name)
+                      .IsRequired()
+                      .HasMaxLength(200)
+                      .IsUnicode(true);
+
+                entity.Property(m => m.Type)
+                      .IsRequired()
+                      .HasMaxLength(100)
+                      .IsUnicode(true);
+
+                entity.Property(m => m.Usage)
+                      .HasMaxLength(500)
+                      .IsUnicode(true);
+
+                entity.Property(m => m.ExpiredDate).IsRequired();
+
+                entity.HasMany(m => m.MedicalEvents)
+                      .WithOne(me => me.Medication)
+                      .HasForeignKey(me => me.MedicationId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+            #endregion
+
+            #region MedicalEvent
+            modelBuilder.Entity<MedicalEvent>(entity =>
+            {
+                entity.ToTable("MedicalEvent");
+
+                entity.HasKey(me => me.MedicalEventId);
+
+                entity.Property(me => me.Type)
+                      .IsRequired()
+                      .HasMaxLength(100)
+                      .IsUnicode(true);
+
+                entity.Property(me => me.Description)
+                      .IsRequired()
+                      .HasMaxLength(1000)
+                      .IsUnicode(true);
+
+                entity.Property(me => me.Note)
+                      .HasMaxLength(1000)
+                      .IsUnicode(true);
+
+                entity.Property(me => me.Date).IsRequired();
+
+                entity.HasOne(me => me.Student)
+                      .WithMany()
+                      .HasForeignKey(me => me.StudentId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(me => me.Nurse)
+                      .WithMany()
+                      .HasForeignKey(me => me.NurseId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(me => me.Medication)
+                      .WithMany(m => m.MedicalEvents)
+                      .HasForeignKey(me => me.MedicationId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+            #endregion
 
             OnModelCreatingPartial(modelBuilder);
         }

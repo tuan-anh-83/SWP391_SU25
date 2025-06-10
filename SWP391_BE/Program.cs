@@ -63,6 +63,8 @@ builder.Services.AddScoped<IStudentRepo, StudentRepo>();
 builder.Services.AddScoped<IBlogRepo, BlogRepo>();
 builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
 builder.Services.AddScoped<IHealthRecordRepo, HealthRecordRepo>();
+builder.Services.AddScoped<IMedicalEventRepo, MedicalEventRepo>();
+
 
 
 
@@ -75,6 +77,7 @@ builder.Services.AddSingleton<ITokenService, TokenService>();
 builder.Services.AddScoped<IBlogService, BlogService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IHealthRecordService, HealthRecordService>();
+builder.Services.AddScoped<IMedicalEventService, MedicalEventService>();
 
 
 

@@ -225,6 +225,89 @@ namespace BOs.Migrations
                     b.ToTable("HealthRecord", (string)null);
                 });
 
+            modelBuilder.Entity("BOs.Models.MedicalEvent", b =>
+                {
+                    b.Property<int>("MedicalEventId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MedicalEventId"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int?>("MedicationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("NurseId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("MedicalEventId");
+
+                    b.HasIndex("MedicationId");
+
+                    b.HasIndex("NurseId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("MedicalEvent", (string)null);
+                });
+
+            modelBuilder.Entity("BOs.Models.Medication", b =>
+                {
+                    b.Property<int>("MedicationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MedicationId"));
+
+                    b.Property<DateTime>("ExpiredDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Usage")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("MedicationId");
+
+                    b.ToTable("Medication", (string)null);
+                });
+
             modelBuilder.Entity("BOs.Models.PasswordResetToken", b =>
                 {
                     b.Property<int>("PasswordResetTokenID")
@@ -394,6 +477,32 @@ namespace BOs.Migrations
                     b.Navigation("Student");
                 });
 
+            modelBuilder.Entity("BOs.Models.MedicalEvent", b =>
+                {
+                    b.HasOne("BOs.Models.Medication", "Medication")
+                        .WithMany("MedicalEvents")
+                        .HasForeignKey("MedicationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("BOs.Models.Account", "Nurse")
+                        .WithMany()
+                        .HasForeignKey("NurseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BOs.Models.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Medication");
+
+                    b.Navigation("Nurse");
+
+                    b.Navigation("Student");
+                });
+
             modelBuilder.Entity("BOs.Models.PasswordResetToken", b =>
                 {
                     b.HasOne("BOs.Models.Account", "Account")
@@ -438,6 +547,11 @@ namespace BOs.Migrations
             modelBuilder.Entity("BOs.Models.Class", b =>
                 {
                     b.Navigation("Students");
+                });
+
+            modelBuilder.Entity("BOs.Models.Medication", b =>
+                {
+                    b.Navigation("MedicalEvents");
                 });
 
             modelBuilder.Entity("BOs.Models.Role", b =>

@@ -26,6 +26,11 @@ namespace Services
         {
             return await _studentRepo.AssignParentToStudentAsync(studentCode, parentId);
         }
+
+        public async Task<Student> CreateStudentAsync(Student student)
+        {
+            return await _studentRepo.CreateStudentAsync(student);
+        }
     }
 
 }

@@ -11,5 +11,6 @@ namespace Repos
     {
         Task<Student?> GetStudentByCodeAsync(string studentCode);
         Task<bool> AssignParentToStudentAsync(string studentCode, int parentId);
+        Task<Student> CreateStudentAsync(Student student);
     }
 }

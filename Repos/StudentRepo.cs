@@ -19,6 +19,11 @@ namespace Repos
         {
             return await StudentDAO.Instance.AssignParentToStudentAsync(studentCode, parentId);
         }
+
+        public async Task<Student> CreateStudentAsync(Student student)
+        {
+            return await StudentDAO.Instance.CreateStudentAsync(student);
+        }
     }
 
 }

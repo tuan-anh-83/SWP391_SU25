@@ -26,6 +26,21 @@ namespace Services
         {
             return await _categoryRepo.GetCategoryByIdAsync(id);
         }
+
+        public async Task<Category> CreateCategoryAsync(Category category)
+        {
+            return await _categoryRepo.CreateCategoryAsync(category);
+        }
+
+        public async Task<bool> UpdateCategoryAsync(Category category)
+        {
+            return await _categoryRepo.UpdateCategoryAsync(category);
+        }
+
+        public async Task<bool> DeleteCategoryAsync(int id)
+        {
+            return await _categoryRepo.DeleteCategoryAsync(id);
+        }
     }
 
 }

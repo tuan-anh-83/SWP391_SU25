@@ -52,6 +52,13 @@ namespace DAOs
             return await _context.SaveChangesAsync() > 0;
         }
 
+        public async Task<Student> CreateStudentAsync(Student student)
+        {
+            student.CreatedAt = DateTime.UtcNow;
+            student.UpdateAt = DateTime.UtcNow;
+            _context.Students.Add(student);
+            await _context.SaveChangesAsync();
+            return student;
+        }
     }
-
 }

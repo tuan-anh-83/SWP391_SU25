@@ -1,164 +1,130 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using BOs.Models;
 using Microsoft.AspNetCore.Mvc;
+using Repos;
 using Services;
 using SWP391_BE.DTO;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SWP391_BE.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class HealthRecordController : ControllerBase
     {
         private readonly IHealthRecordService _healthRecordService;
+        private readonly IAccountService _accountService;
+        private readonly IStudentRepo _studentRepo;
 
-        public HealthRecordController(IHealthRecordService healthRecordService)
+        public HealthRecordController(
+            IHealthRecordService healthRecordService,
+            IAccountService accountService,
+            IStudentRepo studentRepo)
         {
             _healthRecordService = healthRecordService;
+            _accountService = accountService;
+            _studentRepo = studentRepo;
         }
 
-        // GET: api/HealthRecord
-        [HttpGet]
-        [Authorize(Roles = "Admin,Parent")]
-        public async Task<ActionResult<IEnumerable<HealthRecordResponseDTO>>> GetAllHealthRecords()
+        [HttpGet("GetAllHealthRecords")]
+        public async Task<IActionResult> GetAll()
         {
-            try
-            {
-                var healthRecords = await _healthRecordService.GetAllHealthRecords();
-                return Ok(healthRecords);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Error retrieving health records", error = ex.Message });
-            }
+            var records = await _healthRecordService.GetAllHealthRecordsAsync();
+            return Ok(records);
         }
 
-        // GET: api/HealthRecord/5
-        [HttpGet("{id}")]
-        [Authorize(Roles = "Admin,Parent")]
-        public async Task<ActionResult<HealthRecordResponseDTO>> GetHealthRecordById(int id)
+        [HttpGet("GetHealthRecordById/{id}")]
+        public async Task<IActionResult> GetById(int id)
         {
-            try
-            {
-                var healthRecord = await _healthRecordService.GetHealthRecordById(id);
-                if (healthRecord == null)
-                {
-                    return NotFound(new { message = "Health record not found" });
-                }
-                return Ok(healthRecord);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Error retrieving health record", error = ex.Message });
-            }
+            var record = await _healthRecordService.GetHealthRecordByIdAsync(id);
+            if (record == null)
+                return NotFound(new { message = "Health record not found." });
+            return Ok(record);
         }
 
-        // GET: api/HealthRecord/student/5
-        [HttpGet("student/{studentId}")]
-        [Authorize(Roles = "Admin,Parent")]
-        public async Task<ActionResult<IEnumerable<HealthRecordResponseDTO>>> GetHealthRecordsByStudentId(int studentId)
+        [HttpGet("GetHealthRecordsByStudentId/{studentId}")]
+        public async Task<IActionResult> GetByStudentId(int studentId)
         {
-            try
-            {
-                var healthRecords = await _healthRecordService.GetHealthRecordsByStudentId(studentId);
-                return Ok(healthRecords);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Error retrieving health records for student", error = ex.Message });
-            }
+            var records = await _healthRecordService.GetHealthRecordsByStudentIdAsync(studentId);
+            return Ok(records);
         }
 
-        // POST: api/HealthRecord
-        [HttpPost]
-        [Authorize(Roles = "Parent")]
-        public async Task<ActionResult<HealthRecordResponseDTO>> CreateHealthRecord(CreateHealthRecordRequestDTO request)
+        [HttpPost("CreateHealthRecord")]
+        public async Task<IActionResult> Create([FromBody] HealthRecordCreateDTO dto)
         {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
+            // 1. Kiểm tra ParentId có tồn tại không
+            var parent = await _accountService.GetAccountByIdAsync(dto.ParentId);
+            if (parent == null)
+                return BadRequest(new { message = "Parent does not exist." });
 
-                var healthRecord = new BOs.Models.HealthRecord
-                {
-                    ParentId = request.ParentId,
-                    StudentId = request.StudentId,
-                    StudentName = request.StudentName,
-                    StudentCode = request.StudentCode,
-                    Gender = request.Gender,
-                    DateOfBirth = request.DateOfBirth,
-                    Note = request.Note,
-                    Height = request.Height,
-                    Weight = request.Weight
-                };
+            // 2. Kiểm tra StudentCode có tồn tại và có phải là con của Parent không
+            var student = await _studentRepo.GetStudentByCodeAsync(dto.StudentCode);
+            if (student == null)
+                return BadRequest(new { message = "Student does not exist." });
 
-                var result = await _healthRecordService.CreateHealthRecord(healthRecord);
-                return Ok(result);
-            }
-            catch (Exception ex)
+            if (student.ParentId != dto.ParentId)
+                return BadRequest(new { message = "Student is not a child of this parent." });
+
+            var healthRecord = new HealthRecord
             {
-                return StatusCode(500, new { message = "Error creating health record", error = ex.Message });
-            }
+                ParentId = dto.ParentId,
+                StudentCode = dto.StudentCode,
+                Note = dto.Note,
+                Height = dto.Height,
+                Weight = dto.Weight
+            };
+            var created = await _healthRecordService.CreateHealthRecordAsync(healthRecord);
+            return Ok(new { message = "Health record created successfully.", data = created });
         }
 
-        // PUT: api/HealthRecord/5
-        [HttpPut("{id}")]
-        [Authorize(Roles = "Parent")]
-        public async Task<IActionResult> UpdateHealthRecord(int id, UpdateHealthRecordRequestDTO request)
+        [HttpPut("UpdateHealthRecord/{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] HealthRecordUpdateDTO dto)
         {
-            try
-            {
-                if (id != request.HealthRecordId)
-                {
-                    return BadRequest(new { message = "ID mismatch" });
-                }
+            var existing = await _healthRecordService.GetHealthRecordByIdAsync(id);
+            if (existing == null)
+                return NotFound(new { message = "Health record not found." });
 
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-               
-                var existingRecord = await _healthRecordService.GetHealthRecordById(id);
-                if (existingRecord == null)
-                {
-                    return NotFound(new { message = "Health record not found" });
-                }
+            existing.Height = dto.Height;
+            existing.Weight = dto.Weight;
+            if (dto.Note != null && dto.Note != "string")
+                existing.Note = dto.Note;
 
-                existingRecord.Note = request.Note;
-                existingRecord.Height = request.Height;
-                existingRecord.Weight = request.Weight;
-                existingRecord.DateOfBirth = request.DateOfBirth;
-               var result = await _healthRecordService.UpdateHealthRecord(existingRecord);
-                return Ok(result);
-            }
-            catch (Exception ex)
+            var updated = await _healthRecordService.UpdateHealthRecordAsync(existing);
+            if (updated == null)
+                return NotFound(new { message = "Health record not found." });
+
+            // Chỉ trả về DTO
+            return Ok(new
             {
-                return StatusCode(500, new { message = "Error updating health record", error = ex.Message });
-            }
+                message = "Health record updated successfully.",
+                data = ToDTO(updated)
+            });
         }
 
-        // DELETE: api/HealthRecord/5
-        [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin,Parent")]
-        public async Task<IActionResult> DeleteHealthRecord(int id)
+        private HealthRecordDTO ToDTO(HealthRecord record)
         {
-            try
+            return new HealthRecordDTO
             {
-                var result = await _healthRecordService.DeleteHealthRecord(id);
-                if (!result)
-                {
-                    return NotFound(new { message = "Health record not found" });
-                }
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Error deleting health record", error = ex.Message });
-            }
+                HealthRecordId = record.HealthRecordId,
+                ParentId = record.ParentId,
+                StudentId = record.StudentId,
+                StudentName = record.StudentName,
+                StudentCode = record.StudentCode,
+                Gender = record.Gender,
+                DateOfBirth = record.DateOfBirth,
+                Note = record.Note,
+                Height = record.Height,
+                Weight = record.Weight,
+                BMI = record.BMI,
+                NutritionStatus = record.NutritionStatus
+            };
+        }
+
+        [HttpDelete("DeleteHealthRecord/{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var result = await _healthRecordService.DeleteHealthRecordAsync(id);
+            if (!result)
+                return NotFound(new { message = "Health record not found." });
+            return Ok(new { message = "Health record deleted successfully." });
         }
     }
-} 
+}

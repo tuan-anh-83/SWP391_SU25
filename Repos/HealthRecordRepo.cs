@@ -1,114 +1,28 @@
-using BOs.Data;
 using BOs.Models;
-using Microsoft.EntityFrameworkCore;
-using System;
+using DAOs;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Repos
 {
     public class HealthRecordRepo : IHealthRecordRepo
     {
-        private readonly DataContext _context;
+        public Task<HealthRecord> CreateHealthRecordAsync(HealthRecord healthRecord)
+            => HealthRecordDAO.Instance.CreateHealthRecordAsync(healthRecord);
 
-        public HealthRecordRepo(DataContext context)
-        {
-            _context = context;
-        }
+        public Task<HealthRecord?> GetHealthRecordByIdAsync(int id)
+            => HealthRecordDAO.Instance.GetHealthRecordByIdAsync(id);
 
-        public async Task<HealthRecord> CreateHealthRecord(HealthRecord healthRecord)
-        {
-            try
-            {
-                _context.HealthRecords.Add(healthRecord);
-                await _context.SaveChangesAsync();
-                return healthRecord;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error in repository layer while creating health record: " + ex.Message);
-            }
-        }
+        public Task<List<HealthRecord>> GetAllHealthRecordsAsync()
+            => HealthRecordDAO.Instance.GetAllHealthRecordsAsync();
 
-        public async Task<HealthRecord> GetHealthRecordById(int id)
-        {
-            try
-            {
-                return await _context.HealthRecords
-                    .Include(h => h.Student)
-                    .Include(h => h.Parent)
-                    .FirstOrDefaultAsync(h => h.HealthRecordId == id);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error in repository layer while retrieving health record: " + ex.Message);
-            }
-        }
+        public Task<List<HealthRecord>> GetHealthRecordsByStudentIdAsync(int studentId)
+            => HealthRecordDAO.Instance.GetHealthRecordsByStudentIdAsync(studentId);
 
-        public async Task<List<HealthRecord>> GetAllHealthRecords()
-        {
-            try
-            {
-                return await _context.HealthRecords
-                    .Include(h => h.Student)
-                    .Include(h => h.Parent)
-                    .ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error in repository layer while retrieving all health records: " + ex.Message);
-            }
-        }
+        public Task<HealthRecord?> UpdateHealthRecordAsync(HealthRecord healthRecord)
+            => HealthRecordDAO.Instance.UpdateHealthRecordAsync(healthRecord);
 
-        public async Task<List<HealthRecord>> GetHealthRecordsByStudentId(int studentId)
-        {
-            try
-            {
-                return await _context.HealthRecords
-                    .Include(h => h.Student)
-                    .Include(h => h.Parent)
-                    .Where(h => h.StudentId == studentId)
-                    .ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error in repository layer while retrieving health records by student ID: " + ex.Message);
-            }
-        }
-
-        public async Task<HealthRecord> UpdateHealthRecord(HealthRecord healthRecord)
-        {
-            try
-            {
-                _context.Entry(healthRecord).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-                return healthRecord;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error in repository layer while updating health record: " + ex.Message);
-            }
-        }
-
-        public async Task<bool> DeleteHealthRecord(int id)
-        {
-            try
-            {
-                var healthRecord = await _context.HealthRecords.FindAsync(id);
-                if (healthRecord == null)
-                {
-                    return false;
-                }
-
-                _context.HealthRecords.Remove(healthRecord);
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error in repository layer while deleting health record: " + ex.Message);
-            }
-        }
+        public Task<bool> DeleteHealthRecordAsync(int id)
+            => HealthRecordDAO.Instance.DeleteHealthRecordAsync(id);
     }
-} 
+}

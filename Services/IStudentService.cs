@@ -11,6 +11,7 @@ namespace Services
     {
         Task<Student?> GetStudentByCodeAsync(string studentCode);
         Task<bool> LinkStudentToParentAsync(string studentCode, int parentId);
+        Task<Student> CreateStudentAsync(Student student);
     }
 
 }

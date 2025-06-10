@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Services;
+using BOs.Models;
+using SWP391_BE.DTO;
 
 namespace SWP391_BE.Controllers
 {
@@ -29,6 +31,38 @@ namespace SWP391_BE.Controllers
                 return NotFound("Category not found.");
             return Ok(category);
         }
-    }
 
+        [HttpPost("CreateCategory")]
+        public async Task<IActionResult> CreateCategory([FromBody] CategoryCreateDTO dto)
+        {
+            var newCategory = new Category { Name = dto.Name };
+            var created = await _categoryService.CreateCategoryAsync(newCategory);
+            return Ok(new
+            {
+                message = "Category created successfully.",
+                data = created
+            });
+        }
+
+        [HttpPut("UpdateCategory/{id}")]
+        public async Task<IActionResult> UpdateCategory(int id, [FromBody] CategoryUpdateDTO dto)
+        {
+            var updateCategory = new Category { CategoryID = id, Name = dto.Name };
+            var result = await _categoryService.UpdateCategoryAsync(updateCategory);
+            if (!result)
+                return NotFound(new { message = "Category not found." });
+
+            return Ok(new { message = "Category updated successfully." });
+        }
+
+        [HttpDelete("DeleteCategory/{id}")]
+        public async Task<IActionResult> DeleteCategory(int id)
+        {
+            var result = await _categoryService.DeleteCategoryAsync(id);
+            if (!result)
+                return NotFound(new { message = "Category not found." });
+
+            return Ok(new { message = "Category deleted successfully." });
+        }
+    }
 }

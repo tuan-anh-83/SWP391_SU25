@@ -1,4 +1,4 @@
-using BOs.Models;
+﻿using BOs.Models;
 using Repos;
 using System;
 using System.Collections.Generic;
@@ -9,143 +9,86 @@ namespace Services
     public class HealthRecordService : IHealthRecordService
     {
         private readonly IHealthRecordRepo _healthRecordRepo;
+        private readonly IStudentRepo _studentRepo;
 
-        public HealthRecordService(IHealthRecordRepo healthRecordRepo)
+        public HealthRecordService(IHealthRecordRepo healthRecordRepo, IStudentRepo studentRepo)
         {
             _healthRecordRepo = healthRecordRepo;
+            _studentRepo = studentRepo;
         }
 
-        public async Task<HealthRecord> CreateHealthRecord(HealthRecord healthRecord)
+        public async Task<HealthRecord> CreateHealthRecordAsync(HealthRecord healthRecord)
         {
-            try
-            {
-                // Calculate BMI and determine nutrition status before saving
-                healthRecord.BMI = await CalculateBMI(healthRecord.Height, healthRecord.Weight);
-                healthRecord.NutritionStatus = await DetermineNutritionStatus(healthRecord.BMI);
-                
-                return await _healthRecordRepo.CreateHealthRecord(healthRecord);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error in service layer while creating health record: " + ex.Message);
-            }
+            // Lấy thông tin Student từ DB bằng StudentCode
+            var student = await _studentRepo.GetStudentByCodeAsync(healthRecord.StudentCode);
+            if (student == null)
+                throw new Exception("Student not found");
+
+            healthRecord.StudentId = student.StudentId;
+            healthRecord.StudentName = student.Fullname;
+            healthRecord.Gender = student.Gender;
+            healthRecord.DateOfBirth = student.DateOfBirth;
+
+            // Tính BMI và NutritionStatus
+            healthRecord.BMI = CalculateBMI(healthRecord.Height, healthRecord.Weight);
+            healthRecord.NutritionStatus = DetermineNutritionStatus(healthRecord.BMI);
+
+            return await _healthRecordRepo.CreateHealthRecordAsync(healthRecord);
         }
 
-        public async Task<HealthRecord> GetHealthRecordById(int id)
+        public async Task<HealthRecord?> GetHealthRecordByIdAsync(int id)
         {
-            try
-            {
-                var healthRecord = await _healthRecordRepo.GetHealthRecordById(id);
-                if (healthRecord == null)
-                {
-                    throw new Exception("Health record not found");
-                }
-                return healthRecord;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error in service layer while retrieving health record: " + ex.Message);
-            }
+            return await _healthRecordRepo.GetHealthRecordByIdAsync(id);
         }
 
-        public async Task<List<HealthRecord>> GetAllHealthRecords()
+        public async Task<List<HealthRecord>> GetAllHealthRecordsAsync()
         {
-            try
-            {
-                return await _healthRecordRepo.GetAllHealthRecords();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error in service layer while retrieving all health records: " + ex.Message);
-            }
+            return await _healthRecordRepo.GetAllHealthRecordsAsync();
         }
 
-        public async Task<List<HealthRecord>> GetHealthRecordsByStudentId(int studentId)
+        public async Task<List<HealthRecord>> GetHealthRecordsByStudentIdAsync(int studentId)
         {
-            try
-            {
-                return await _healthRecordRepo.GetHealthRecordsByStudentId(studentId);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error in service layer while retrieving health records by student ID: " + ex.Message);
-            }
+            return await _healthRecordRepo.GetHealthRecordsByStudentIdAsync(studentId);
         }
 
-        public async Task<HealthRecord> UpdateHealthRecord(HealthRecord healthRecord)
+        public async Task<HealthRecord?> UpdateHealthRecordAsync(HealthRecord healthRecord)
         {
-            try
-            {
-                // Recalculate BMI and nutrition status if height or weight changed
-                healthRecord.BMI = await CalculateBMI(healthRecord.Height, healthRecord.Weight);
-                healthRecord.NutritionStatus = await DetermineNutritionStatus(healthRecord.BMI);
-                
-                return await _healthRecordRepo.UpdateHealthRecord(healthRecord);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error in service layer while updating health record: " + ex.Message);
-            }
+            var student = await _studentRepo.GetStudentByCodeAsync(healthRecord.StudentCode);
+            if (student == null)
+                throw new Exception("Student not found");
+
+            healthRecord.StudentId = student.StudentId;
+            healthRecord.StudentName = student.Fullname;
+            healthRecord.Gender = student.Gender;
+            healthRecord.DateOfBirth = student.DateOfBirth;
+
+            healthRecord.BMI = CalculateBMI(healthRecord.Height, healthRecord.Weight);
+            healthRecord.NutritionStatus = DetermineNutritionStatus(healthRecord.BMI);
+
+            return await _healthRecordRepo.UpdateHealthRecordAsync(healthRecord);
         }
 
-        public async Task<bool> DeleteHealthRecord(int id)
+        public async Task<bool> DeleteHealthRecordAsync(int id)
         {
-            try
-            {
-                return await _healthRecordRepo.DeleteHealthRecord(id);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error in service layer while deleting health record: " + ex.Message);
-            }
+            return await _healthRecordRepo.DeleteHealthRecordAsync(id);
         }
 
-        public async Task<double> CalculateBMI(double height, double weight)
+        private double CalculateBMI(double height, double weight)
         {
-            try
-            {
-                // Height should be in meters, weight in kilograms
-                if (height <= 0 || weight <= 0)
-                {
-                    throw new ArgumentException("Height and weight must be greater than 0");
-                }
-                if (height >= 200 || weight >= 200)
-                {
-                    throw new ArgumentException("Height and weight must be less than 200");
-                }
-
-                // Convert height from cm to meters if needed
-                double heightInMeters = height / 100 ;
-                
-                // Calculate BMI: weight (kg) / (height (m) * height (m))
-                double bmi = weight / (heightInMeters * heightInMeters);
-                return Math.Round(bmi, 2);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error calculating BMI: " + ex.Message);
-            }
+            if (height <= 0 || weight <= 0)
+                throw new ArgumentException("Height and weight must be greater than 0");
+            double heightInMeters = height / 100;
+            double bmi = weight / (heightInMeters * heightInMeters);
+            return Math.Round(bmi, 2);
         }
 
-        public async Task<string> DetermineNutritionStatus(double bmi)
+        private string DetermineNutritionStatus(double bmi)
         {
-            try
-            {
-                if (bmi < 18.5)
-                    return NutritionStatus.Underweight.ToString();
-                else if (bmi < 25)
-                    return NutritionStatus.Normal.ToString();
-                else if (bmi < 30)
-                    return NutritionStatus.Overweight.ToString();
-                else if (bmi < 40)
-                    return NutritionStatus.Obese.ToString();
-                else
-                    return NutritionStatus.ExtremlyObese.ToString();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error determining nutrition status: " + ex.Message);
-            }
+            if (bmi < 18.5) return "Underweight";
+            if (bmi < 25) return "Normal";
+            if (bmi < 30) return "Overweight";
+            if (bmi < 40) return "Obese";
+            return "ExtremlyObese";
         }
     }
-} 
+}

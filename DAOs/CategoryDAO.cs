@@ -42,6 +42,35 @@ namespace DAOs
                                  .Include(c => c.Blogs)
                                  .FirstOrDefaultAsync(c => c.CategoryID == id);
         }
-    }
 
+        public async Task<Category> CreateCategoryAsync(Category category)
+        {
+            _context.Categories.Add(category);
+            await _context.SaveChangesAsync();
+            return category;
+        }
+
+        public async Task<bool> UpdateCategoryAsync(Category category)
+        {
+            var existingCategory = await _context.Categories.FindAsync(category.CategoryID);
+            if (existingCategory == null)
+                return false;
+
+            existingCategory.Name = category.Name;
+            
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> DeleteCategoryAsync(int id)
+        {
+            var category = await _context.Categories.FindAsync(id);
+            if (category == null)
+                return false;
+
+            _context.Categories.Remove(category);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+    }
 }

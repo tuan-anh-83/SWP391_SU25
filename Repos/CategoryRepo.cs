@@ -19,6 +19,21 @@ namespace Repos
         {
             return await CategoryDAO.Instance.GetCategoryByIdAsync(id);
         }
+
+        public async Task<Category> CreateCategoryAsync(Category category)
+        {
+            return await CategoryDAO.Instance.CreateCategoryAsync(category);
+        }
+
+        public async Task<bool> UpdateCategoryAsync(Category category)
+        {
+            return await CategoryDAO.Instance.UpdateCategoryAsync(category);
+        }
+
+        public async Task<bool> DeleteCategoryAsync(int id)
+        {
+            return await CategoryDAO.Instance.DeleteCategoryAsync(id);
+        }
     }
 
 }

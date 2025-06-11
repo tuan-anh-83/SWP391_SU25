@@ -9,9 +9,12 @@ namespace Services
 {
     public interface IStudentService
     {
+        Task<Student?> GetStudentByIdAsync(int id);
+        Task<List<Student>> GetAllStudentsAsync();
+        Task<Student> CreateStudentAsync(Student student);
+        Task<bool> UpdateStudentAsync(Student student);
+        Task<bool> DeleteStudentAsync(int id);
         Task<Student?> GetStudentByCodeAsync(string studentCode);
         Task<bool> LinkStudentToParentAsync(string studentCode, int parentId);
-        Task<Student> CreateStudentAsync(Student student);
     }
-
 }

@@ -24,6 +24,26 @@ namespace Repos
         {
             return await StudentDAO.Instance.CreateStudentAsync(student);
         }
+
+        public async Task<Student?> GetStudentByIdAsync(int id)
+        {
+            return await StudentDAO.Instance.GetStudentByIdAsync(id);
+        }
+
+        public async Task<List<Student>> GetAllStudentsAsync()
+        {
+            return await StudentDAO.Instance.GetAllStudentsAsync();
+        }
+
+        public async Task<bool> UpdateStudentAsync(Student student)
+        {
+            return await StudentDAO.Instance.UpdateStudentAsync(student);
+        }
+
+        public async Task<bool> DeleteStudentAsync(int id)
+        {
+            return await StudentDAO.Instance.DeleteStudentAsync(id);
+        }
     }
 
 }

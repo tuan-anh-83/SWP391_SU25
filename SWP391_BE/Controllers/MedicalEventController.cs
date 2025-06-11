@@ -1,9 +1,12 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using BOs.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services;
 using SWP391_BE.DTO;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SWP391_BE.Controllers
 {
@@ -13,13 +16,11 @@ namespace SWP391_BE.Controllers
     {
         private readonly IMedicalEventService _medicalEventService;
         private readonly IAccountService _accountService;
-        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public MedicalEventController(IMedicalEventService medicalEventService, IAccountService accountService, IHttpContextAccessor httpContextAccessor)
         {
             _medicalEventService = medicalEventService;
             _accountService = accountService;
-            _httpContextAccessor = httpContextAccessor;
         }
 
         [HttpGet("GetAllMedicalEvents")]
@@ -35,8 +36,8 @@ namespace SWP391_BE.Controllers
                 StudentName = me.Student?.Fullname,
                 me.NurseId,
                 NurseName = me.Nurse?.Fullname,
-                me.MedicationId,
-                MedicationName = me.Medication?.Name,
+                MedicationIds = me.Medications?.Select(m => m.MedicationId).ToList(),
+                MedicationNames = me.Medications?.Select(m => m.Name).ToList(),
                 me.Type,
                 me.Description,
                 me.Note,
@@ -60,8 +61,8 @@ namespace SWP391_BE.Controllers
                 StudentName = medicalEvent.Student?.Fullname,
                 medicalEvent.NurseId,
                 NurseName = medicalEvent.Nurse?.Fullname,
-                medicalEvent.MedicationId,
-                MedicationName = medicalEvent.Medication?.Name,
+                MedicationIds = medicalEvent.Medications?.Select(m => m.MedicationId).ToList(),
+                MedicationNames = medicalEvent.Medications?.Select(m => m.Name).ToList(),
                 medicalEvent.Type,
                 medicalEvent.Description,
                 medicalEvent.Note,
@@ -89,14 +90,13 @@ namespace SWP391_BE.Controllers
             {
                 StudentId = dto.StudentId,
                 NurseId = account.AccountID,
-                MedicationId = dto.MedicationId,
                 Type = dto.Type.Trim(),
-                Description = dto.Description.Trim(),
+                Description = dto.Description?.Trim(),
                 Note = dto.Note?.Trim(),
                 Date = dto.Date
             };
 
-            var created = await _medicalEventService.CreateMedicalEventAsync(medicalEvent);
+            var created = await _medicalEventService.CreateMedicalEventAsync(medicalEvent, dto.MedicationIds);
             if (!created)
                 return BadRequest(new { message = "Failed to create medical event." });
 
@@ -105,7 +105,7 @@ namespace SWP391_BE.Controllers
 
         [HttpPut("UpdateMedicalEvent/{id}")]
         [Authorize(Roles = "Nurse,Admin")]
-        public async Task<IActionResult> UpdateMedicalEvent(int id, [FromBody] MedicalEventUpdateModel model)
+        public async Task<IActionResult> UpdateMedicalEvent(int id, [FromBody] MedicalEventUpdateDTO dto)
         {
             var medicalEvent = await _medicalEventService.GetMedicalEventByIdAsync(id);
             if (medicalEvent == null) return NotFound(new { message = "Medical event not found." });
@@ -120,13 +120,16 @@ namespace SWP391_BE.Controllers
             if (!account.Status.Equals("Active", StringComparison.OrdinalIgnoreCase))
                 return Unauthorized(new { message = "Account is not active." });
 
-            medicalEvent.Type = model.Type?.Trim() ?? medicalEvent.Type;
-            medicalEvent.Description = model.Description?.Trim() ?? medicalEvent.Description;
-            medicalEvent.Note = model.Note?.Trim() ?? medicalEvent.Note;
-            medicalEvent.Date = model.Date ?? medicalEvent.Date;
-            medicalEvent.MedicationId = model.MedicationId ?? medicalEvent.MedicationId;
+            if (!string.IsNullOrWhiteSpace(dto.Type) && dto.Type != "string")
+                medicalEvent.Type = dto.Type.Trim();
+            if (!string.IsNullOrWhiteSpace(dto.Description) && dto.Description != "string")
+                medicalEvent.Description = dto.Description.Trim();
+            if (!string.IsNullOrWhiteSpace(dto.Note) && dto.Note != "string")
+                medicalEvent.Note = dto.Note.Trim();
+            if (dto.Date.HasValue && dto.Date.Value != medicalEvent.Date)
+                medicalEvent.Date = dto.Date.Value;
 
-            var updated = await _medicalEventService.UpdateMedicalEventAsync(medicalEvent);
+            var updated = await _medicalEventService.UpdateMedicalEventAsync(medicalEvent, dto.MedicationIds);
             if (!updated)
                 return BadRequest(new { message = "Failed to update medical event." });
 

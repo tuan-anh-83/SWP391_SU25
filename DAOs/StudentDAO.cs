@@ -60,5 +60,49 @@ namespace DAOs
             await _context.SaveChangesAsync();
             return student;
         }
+
+        public async Task<Student?> GetStudentByIdAsync(int id)
+        {
+            return await _context.Students
+                .Include(s => s.Parent)
+                .Include(s => s.Class)
+                .FirstOrDefaultAsync(s => s.StudentId == id);
+        }
+
+        public async Task<List<Student>> GetAllStudentsAsync()
+        {
+            return await _context.Students
+                .Include(s => s.Parent)
+                .Include(s => s.Class)
+                .ToListAsync();
+        }
+
+        public async Task<bool> UpdateStudentAsync(Student student)
+        {
+            var existing = await _context.Students.FindAsync(student.StudentId);
+            if (existing == null) return false;
+
+            // Update fields
+            existing.Fullname = student.Fullname;
+            existing.ClassId = student.ClassId;
+            existing.StudentCode = student.StudentCode;
+            existing.Gender = student.Gender;
+            existing.ParentId = student.ParentId;
+            existing.DateOfBirth = student.DateOfBirth;
+            existing.UpdateAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> DeleteStudentAsync(int id)
+        {
+            var student = await _context.Students.FindAsync(id);
+            if (student == null) return false;
+
+            _context.Students.Remove(student);
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

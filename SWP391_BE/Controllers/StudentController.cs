@@ -22,10 +22,8 @@ namespace SWP391_BE.Controllers
         [HttpPost("CreateStudent")]
         public async Task<IActionResult> CreateStudent([FromBody] StudentCreateDTO dto)
         {
-            // Nếu ParentId là 0 hoặc null thì không gán parent
             int? parentId = (dto.ParentId == null || dto.ParentId == 0) ? null : dto.ParentId;
 
-            // Nếu có ParentId, kiểm tra parent có tồn tại không
             if (parentId != null)
             {
                 var parent = await _accountService.GetAccountByIdAsync(parentId.Value);
@@ -33,7 +31,6 @@ namespace SWP391_BE.Controllers
                     return BadRequest(new { message = "Parent does not exist." });
             }
 
-            // Kiểm tra StudentCode đã tồn tại chưa
             var existing = await _studentService.GetStudentByCodeAsync(dto.StudentCode);
             if (existing != null)
                 return BadRequest(new { message = "StudentCode already exists." });
@@ -52,6 +49,78 @@ namespace SWP391_BE.Controllers
 
             var created = await _studentService.CreateStudentAsync(student);
             return Ok(new { message = "Student created successfully.", data = created });
+        }
+
+        [HttpGet("GetStudentById/{id}")]
+        public async Task<IActionResult> GetStudentById(int id)
+        {
+            var student = await _studentService.GetStudentByIdAsync(id);
+            if (student == null)
+                return NotFound(new { message = "Student not found." });
+            return Ok(student);
+        }
+
+        [HttpGet("GetAllStudents")]
+        public async Task<IActionResult> GetAllStudents()
+        {
+            var students = await _studentService.GetAllStudentsAsync();
+            return Ok(students);
+        }
+
+        [HttpGet("GetStudentByCode/{studentCode}")]
+        public async Task<IActionResult> GetStudentByCode(string studentCode)
+        {
+            var student = await _studentService.GetStudentByCodeAsync(studentCode);
+            if (student == null)
+                return NotFound(new { message = "Student not found." });
+            return Ok(student);
+        }
+
+        [HttpPut("UpdateStudent/{id}")]
+        public async Task<IActionResult> UpdateStudent(int id, [FromBody] StudentUpdateDTO dto)
+        {
+            var student = await _studentService.GetStudentByIdAsync(id);
+            if (student == null)
+                return NotFound(new { message = "Student not found." });
+
+            // Chỉ cập nhật trường nào có giá trị hợp lệ
+            if (!string.IsNullOrWhiteSpace(dto.Fullname)) student.Fullname = dto.Fullname;
+            if (dto.ClassId.HasValue && dto.ClassId.Value != 0) student.ClassId = dto.ClassId.Value;
+            if (!string.IsNullOrWhiteSpace(dto.StudentCode) && dto.StudentCode != "string") student.StudentCode = dto.StudentCode;
+            if (!string.IsNullOrWhiteSpace(dto.Gender) && dto.Gender != "string") student.Gender = dto.Gender;
+            if (dto.DateOfBirth.HasValue && dto.DateOfBirth.Value != student.DateOfBirth)
+                student.DateOfBirth = dto.DateOfBirth.Value;
+
+            // ParentId có thể null hoặc 0
+            if (dto.ParentId == null || dto.ParentId == 0)
+            {
+                student.ParentId = null;
+            }
+            else
+            {
+                var parent = await _accountService.GetAccountByIdAsync(dto.ParentId.Value);
+                if (parent == null)
+                    return BadRequest(new { message = "Parent does not exist." });
+                student.ParentId = dto.ParentId;
+            }
+
+            student.UpdateAt = DateTime.UtcNow;
+
+            var result = await _studentService.UpdateStudentAsync(student);
+            if (!result)
+                return BadRequest(new { message = "Update failed." });
+
+            return Ok(new { message = "Student updated successfully." });
+        }
+
+        [HttpDelete("DeleteStudent/{id}")]
+        public async Task<IActionResult> DeleteStudent(int id)
+        {
+            var result = await _studentService.DeleteStudentAsync(id);
+            if (!result)
+                return NotFound(new { message = "Student not found." });
+
+            return Ok(new { message = "Student deleted successfully." });
         }
     }
 }

@@ -31,6 +31,26 @@ namespace Services
         {
             return await _studentRepo.CreateStudentAsync(student);
         }
+
+        public async Task<Student?> GetStudentByIdAsync(int id)
+        {
+            return await _studentRepo.GetStudentByIdAsync(id);
+        }
+
+        public async Task<List<Student>> GetAllStudentsAsync()
+        {
+            return await _studentRepo.GetAllStudentsAsync();
+        }
+
+        public async Task<bool> UpdateStudentAsync(Student student)
+        {
+            return await _studentRepo.UpdateStudentAsync(student);
+        }
+
+        public async Task<bool> DeleteStudentAsync(int id)
+        {
+            return await _studentRepo.DeleteStudentAsync(id);
+        }
     }
 
 }

@@ -304,11 +304,6 @@ namespace BOs.Data
                       .IsUnicode(true);
 
                 entity.Property(m => m.ExpiredDate).IsRequired();
-
-                entity.HasMany(m => m.MedicalEvents)
-                      .WithOne(me => me.Medication)
-                      .HasForeignKey(me => me.MedicationId)
-                      .OnDelete(DeleteBehavior.Restrict);
             });
             #endregion
 
@@ -344,13 +339,14 @@ namespace BOs.Data
                       .WithMany()
                       .HasForeignKey(me => me.NurseId)
                       .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(me => me.Medication)
-                      .WithMany(m => m.MedicalEvents)
-                      .HasForeignKey(me => me.MedicationId)
-                      .OnDelete(DeleteBehavior.Restrict);
             });
             #endregion
+
+            // Many-to-Many: MedicalEvent <-> Medication
+            modelBuilder.Entity<MedicalEvent>()
+                .HasMany(me => me.Medications)
+                .WithMany(m => m.MedicalEvents)
+                .UsingEntity(j => j.ToTable("MedicalEventMedication"));
 
             OnModelCreatingPartial(modelBuilder);
         }

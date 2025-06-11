@@ -6,25 +6,19 @@ public class MedicalEventCreateDTO
 {
     [Required]
     public int StudentId { get; set; }
-
     [Required]
     public string Type { get; set; }
-
     public string Description { get; set; }
-
     public string Note { get; set; }
-
     [Required]
     public DateTime Date { get; set; }
-
-    public int? MedicationId { get; set; }
+    public List<int> MedicationIds { get; set; } = new List<int>();
 }
-
-public class MedicalEventUpdateModel
+public class MedicalEventUpdateDTO
 {
-    public string Type { get; set; }
-    public string Description { get; set; }
-    public string Note { get; set; }
+    public string? Type { get; set; }
+    public string? Description { get; set; }
+    public string? Note { get; set; }
     public DateTime? Date { get; set; }
-    public int? MedicationId { get; set; }
+    public List<int>? MedicationIds { get; set; }
 }

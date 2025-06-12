@@ -31,6 +31,7 @@ namespace BOs.Data
         public DbSet<HealthRecord> HealthRecords { get; set; }
         public DbSet<MedicalEvent> MedicalEvents { get; set; }
         public DbSet<Medication> Medications { get; set; }
+        public DbSet<ParentMedicationRequest> ParentMedicationRequests { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer(GetConnectionString());
@@ -347,6 +348,45 @@ namespace BOs.Data
                 .HasMany(me => me.Medications)
                 .WithMany(m => m.MedicalEvents)
                 .UsingEntity(j => j.ToTable("MedicalEventMedication"));
+
+            #region ParentMedicationRequest
+            modelBuilder.Entity<ParentMedicationRequest>(entity =>
+            {
+                entity.ToTable("ParentMedicationRequest");
+
+                entity.HasKey(r => r.RequestId);
+
+                entity.Property(r => r.ParentNote)
+                      .HasMaxLength(1000)
+                      .IsUnicode(true);
+
+                entity.Property(r => r.NurseNote)
+                      .HasMaxLength(1000)
+                      .IsUnicode(true);
+
+                entity.Property(r => r.Status)
+                      .IsRequired()
+                      .HasMaxLength(50)
+                      .IsUnicode(true);
+
+                entity.Property(r => r.DateCreated)
+                      .IsRequired();
+
+                entity.HasOne(r => r.Parent)
+                      .WithMany()
+                      .HasForeignKey(r => r.ParentId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.Student)
+                      .WithMany()
+                      .HasForeignKey(r => r.StudentId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasMany(r => r.Medications)
+                      .WithMany()
+                      .UsingEntity(j => j.ToTable("ParentMedicationRequestMedication"));
+            });
+            #endregion
 
             OnModelCreatingPartial(modelBuilder);
         }

@@ -35,12 +35,16 @@ namespace SWP391_BE.Controllers
             if (existing != null)
                 return BadRequest(new { message = "StudentCode already exists." });
 
+            string gender = string.IsNullOrWhiteSpace(dto.Gender)
+                ? null
+                : char.ToUpper(dto.Gender[0]) + dto.Gender.Substring(1).ToLower();
+
             var student = new Student
             {
                 Fullname = dto.Fullname,
                 ClassId = dto.ClassId,
                 StudentCode = dto.StudentCode,
-                Gender = dto.Gender,
+                Gender = gender,
                 ParentId = parentId,
                 DateOfBirth = dto.DateOfBirth,
                 CreatedAt = DateTime.UtcNow,
@@ -48,32 +52,92 @@ namespace SWP391_BE.Controllers
             };
 
             var created = await _studentService.CreateStudentAsync(student);
-            return Ok(new { message = "Student created successfully.", data = created });
+
+            // Lấy lại student vừa tạo để lấy navigation property
+            var s = await _studentService.GetStudentByIdAsync(created.StudentId);
+            var result = new
+            {
+                s.StudentId,
+                s.Fullname,
+                s.ClassId,
+                ClassName = s.Class?.ClassName,
+                s.StudentCode,
+                s.Gender,
+                s.ParentId,
+                ParentName = s.Parent?.Fullname,
+                s.DateOfBirth,
+                s.CreatedAt,
+                s.UpdateAt
+            };
+
+            return Ok(new { message = "Student created successfully.", data = result });
         }
 
         [HttpGet("GetStudentById/{id}")]
         public async Task<IActionResult> GetStudentById(int id)
         {
-            var student = await _studentService.GetStudentByIdAsync(id);
-            if (student == null)
+            var s = await _studentService.GetStudentByIdAsync(id);
+            if (s == null)
                 return NotFound(new { message = "Student not found." });
-            return Ok(student);
+            var result = new
+            {
+                s.StudentId,
+                s.Fullname,
+                s.ClassId,
+                ClassName = s.Class?.ClassName,
+                s.StudentCode,
+                s.Gender,
+                s.ParentId,
+                ParentName = s.Parent?.Fullname,
+                s.DateOfBirth,
+                s.CreatedAt,
+                s.UpdateAt
+            };
+            return Ok(result);
         }
 
         [HttpGet("GetAllStudents")]
         public async Task<IActionResult> GetAllStudents()
         {
             var students = await _studentService.GetAllStudentsAsync();
-            return Ok(students);
+            var result = students.Select(s => new
+            {
+                s.StudentId,
+                s.Fullname,
+                s.ClassId,
+                ClassName = s.Class?.ClassName,
+                s.StudentCode,
+                s.Gender,
+                s.ParentId,
+                ParentName = s.Parent?.Fullname,
+                s.DateOfBirth,
+                s.CreatedAt,
+                s.UpdateAt
+            });
+            return Ok(result);
         }
 
         [HttpGet("GetStudentByCode/{studentCode}")]
         public async Task<IActionResult> GetStudentByCode(string studentCode)
         {
-            var student = await _studentService.GetStudentByCodeAsync(studentCode);
-            if (student == null)
+            var s = await _studentService.GetStudentByCodeAsync(studentCode);
+            if (s == null)
                 return NotFound(new { message = "Student not found." });
-            return Ok(student);
+            var result = new
+            {
+                s.StudentId,
+                s.Fullname,
+                s.ClassId,
+                ClassName = s.Class?.ClassName,
+                s.StudentCode,
+                s.Gender,
+                s.ParentId,
+                ParentName = s.Parent?.Fullname,
+                s.DateOfBirth,
+                s.CreatedAt,
+                s.UpdateAt
+            };
+            return Ok(result);
         }
 
         [HttpPut("UpdateStudent/{id}")]

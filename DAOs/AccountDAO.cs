@@ -261,8 +261,7 @@ namespace DAOs
 
         public async Task InvalidatePasswordResetTokenAsync(int accountId, string token)
         {
-            var resetToken = await _context.PasswordResetTokens.AsNoTracking()
-            .FirstOrDefaultAsync(t => t.AccountID == accountId && t.Token == token);
+            var resetToken = await _context.PasswordResetTokens.FirstOrDefaultAsync(t => t.AccountID == accountId && t.Token == token);
 
             if (resetToken != null)
             {

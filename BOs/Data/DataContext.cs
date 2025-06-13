@@ -32,6 +32,7 @@ namespace BOs.Data
         public DbSet<MedicalEvent> MedicalEvents { get; set; }
         public DbSet<Medication> Medications { get; set; }
         public DbSet<ParentMedicationRequest> ParentMedicationRequests { get; set; }
+        public DbSet<ParentMedicationDetail> ParentMedicationDetails { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer(GetConnectionString());
@@ -383,8 +384,23 @@ namespace BOs.Data
                       .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasMany(r => r.Medications)
-                      .WithMany()
-                      .UsingEntity(j => j.ToTable("ParentMedicationRequestMedication"));
+                      .WithOne(m => m.Request)
+                      .HasForeignKey(m => m.RequestId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+            #endregion
+
+            #region ParentMedicationDetail 
+            modelBuilder.Entity<ParentMedicationDetail>(entity =>
+            {
+                entity.ToTable("ParentMedicationDetail");
+                entity.HasKey(m => m.MedicationDetailId);
+
+                entity.Property(m => m.Name).IsRequired().HasMaxLength(255).IsUnicode(true);
+                entity.Property(m => m.Type).HasMaxLength(100).IsUnicode(true);
+                entity.Property(m => m.Usage).HasMaxLength(500).IsUnicode(true);
+                entity.Property(m => m.Dosage).HasMaxLength(100).IsUnicode(true);
+                entity.Property(m => m.Note).HasMaxLength(500).IsUnicode(true);
             });
             #endregion
 

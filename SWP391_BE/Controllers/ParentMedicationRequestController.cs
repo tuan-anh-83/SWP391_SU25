@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services;
 using SWP391_BE.DTO;
@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Linq;
 using BOs.Models;
+using System.Collections.Generic;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -48,12 +49,21 @@ public class ParentMedicationRequestController : ControllerBase
         {
             ParentId = parentId,
             StudentId = dto.StudentId,
-            ParentNote = dto.ParentNote,
+            ParentNote = dto.ParentNote, // Có thể null
             DateCreated = DateTime.UtcNow,
-            Status = "Pending"
+            Status = "Pending",
+            Medications = dto.Medications?.Select(m => new ParentMedicationDetail
+            {
+                Name = m.Name,
+                Type = m.Type,
+                Usage = m.Usage,
+                Dosage = m.Dosage,
+                ExpiredDate = m.ExpiredDate,
+                Note = m.Note
+            }).ToList()
         };
 
-        var created = await _service.CreateAsync(request, dto.MedicationIds);
+        var created = await _service.CreateAsync(request);
         if (!created)
             return BadRequest(new { message = "Failed to send medication request." });
 
@@ -67,7 +77,7 @@ public class ParentMedicationRequestController : ControllerBase
         if (dto.Status != "Approved" && dto.Status != "Rejected")
             return BadRequest(new { message = "Status must be 'Approved' or 'Rejected'." });
 
-        var result = await _service.ApproveAsync(requestId, dto.Status, dto.NurseNote);
+        var result = await _service.ApproveAsync(requestId, dto.Status, dto.NurseNote); // Có thể null
         if (!result)
             return BadRequest(new { message = "Failed to update request status." });
 
@@ -86,12 +96,20 @@ public class ParentMedicationRequestController : ControllerBase
             ParentName = r.Parent?.Fullname,
             r.StudentId,
             StudentName = r.Student?.Fullname,
-            ParentNote = r.ParentNote,
-            NurseNote = r.NurseNote,
+            r.ParentNote,
+            r.NurseNote,
             r.DateCreated,
             r.Status,
-            MedicationIds = r.Medications?.Select(m => m.MedicationId).ToList(),
-            MedicationNames = r.Medications?.Select(m => m.Name).ToList()
+            Medications = r.Medications.Select(m => new
+            {
+                m.MedicationDetailId,
+                m.Name,
+                m.Type,
+                m.Usage,
+                m.Dosage,
+                m.ExpiredDate,
+                m.Note
+            }).ToList()
         });
         return Ok(result);
     }

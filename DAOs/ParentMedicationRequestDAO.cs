@@ -29,13 +29,8 @@ namespace DAOs
             }
         }
 
-        public async Task<bool> CreateAsync(ParentMedicationRequest request, List<int> medicationIds)
+        public async Task<bool> CreateAsync(ParentMedicationRequest request)
         {
-            if (medicationIds != null && medicationIds.Count > 0)
-            {
-                var medications = await _context.Medications.Where(m => medicationIds.Contains(m.MedicationId)).ToListAsync();
-                request.Medications = medications;
-            }
             await _context.AddAsync(request);
             return await _context.SaveChangesAsync() > 0;
         }
@@ -58,12 +53,12 @@ namespace DAOs
                 .FirstOrDefaultAsync(r => r.RequestId == id);
         }
 
-        public async Task<bool> ApproveAsync(int id, string status, string? note)
+        public async Task<bool> ApproveAsync(int id, string status, string nurseNote)
         {
             var req = await _context.Set<ParentMedicationRequest>().FindAsync(id);
             if (req == null) return false;
             req.Status = status;
-            if (!string.IsNullOrWhiteSpace(note)) req.NurseNote = note;
+            req.NurseNote = nurseNote;
             _context.Update(req);
             return await _context.SaveChangesAsync() > 0;
         }

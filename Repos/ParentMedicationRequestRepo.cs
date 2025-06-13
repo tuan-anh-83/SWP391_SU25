@@ -7,9 +7,9 @@ namespace Repos
 {
     public class ParentMedicationRequestRepo : IParentMedicationRequestRepo
     {
-        public Task<bool> CreateAsync(ParentMedicationRequest request, List<int> medicationIds) => ParentMedicationRequestDAO.Instance.CreateAsync(request, medicationIds);
+        public Task<bool> CreateAsync(ParentMedicationRequest request) => ParentMedicationRequestDAO.Instance.CreateAsync(request);
         public Task<List<ParentMedicationRequest>> GetAllAsync() => ParentMedicationRequestDAO.Instance.GetAllAsync();
         public Task<ParentMedicationRequest?> GetByIdAsync(int id) => ParentMedicationRequestDAO.Instance.GetByIdAsync(id);
-        public Task<bool> ApproveAsync(int id, string status, string? note) => ParentMedicationRequestDAO.Instance.ApproveAsync(id, status, note);
+        public Task<bool> ApproveAsync(int id, string status, string nurseNote) => ParentMedicationRequestDAO.Instance.ApproveAsync(id, status, nurseNote);
     }
 }

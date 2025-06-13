@@ -3,6 +3,6 @@
     public class ParentMedicationRequestApproveDTO
     {
         public string Status { get; set; } // "Approved" hoặc "Rejected"
-        public string? NurseNote { get; set; }
+        public string? NurseNote { get; set; } // Cho phép null
     }
 }

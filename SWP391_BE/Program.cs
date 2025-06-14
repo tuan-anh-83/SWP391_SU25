@@ -67,6 +67,7 @@ builder.Services.AddScoped<IClassRepo, ClassRepo>();
 builder.Services.AddScoped<IMedicalEventRepo, MedicalEventRepo>();
 builder.Services.AddScoped<IMedicationRepo, MedicationRepo>();
 builder.Services.AddScoped<IParentMedicationRequestRepo, ParentMedicationRequestRepo>();
+builder.Services.AddScoped<IMedicalSupplyRepo, MedicalSupplyRepo>();
 
 
 // Services
@@ -82,6 +83,7 @@ builder.Services.AddScoped<IClassService, ClassService>();
 builder.Services.AddScoped<IMedicalEventService, MedicalEventService>();
 builder.Services.AddScoped<IMedicationService, MedicationService>();
 builder.Services.AddScoped<IParentMedicationRequestService, ParentMedicationRequestService>();
+builder.Services.AddScoped<IMedicalSupplyService, MedicalSupplyService>();
 
 builder.Services.AddDistributedMemoryCache();
 

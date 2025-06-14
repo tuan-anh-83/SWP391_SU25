@@ -33,6 +33,7 @@ namespace BOs.Data
         public DbSet<Medication> Medications { get; set; }
         public DbSet<ParentMedicationRequest> ParentMedicationRequests { get; set; }
         public DbSet<ParentMedicationDetail> ParentMedicationDetails { get; set; }
+        public DbSet<MedicalSupply> MedicalSupplies { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer(GetConnectionString());
@@ -341,14 +342,16 @@ namespace BOs.Data
                       .WithMany()
                       .HasForeignKey(me => me.NurseId)
                       .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasMany(me => me.Medications)
+                      .WithMany(m => m.MedicalEvents)
+                      .UsingEntity(j => j.ToTable("MedicalEventMedication"));
+
+                entity.HasMany(e => e.MedicalSupplies)
+                      .WithMany(s => s.MedicalEvents)
+                      .UsingEntity(j => j.ToTable("MedicalEventMedicalSupply"));
             });
             #endregion
-
-            // Many-to-Many: MedicalEvent <-> Medication
-            modelBuilder.Entity<MedicalEvent>()
-                .HasMany(me => me.Medications)
-                .WithMany(m => m.MedicalEvents)
-                .UsingEntity(j => j.ToTable("MedicalEventMedication"));
 
             #region ParentMedicationRequest
             modelBuilder.Entity<ParentMedicationRequest>(entity =>
@@ -401,6 +404,18 @@ namespace BOs.Data
                 entity.Property(m => m.Usage).HasMaxLength(500).IsUnicode(true);
                 entity.Property(m => m.Dosage).HasMaxLength(100).IsUnicode(true);
                 entity.Property(m => m.Note).HasMaxLength(500).IsUnicode(true);
+            });
+            #endregion
+
+            #region MedicalSupply 
+            modelBuilder.Entity<MedicalSupply>(entity =>
+            {
+                entity.ToTable("MedicalSupply");
+                entity.HasKey(s => s.MedicalSupplyId);
+                entity.Property(s => s.Name).IsRequired().HasMaxLength(255).IsUnicode(true);
+                entity.Property(s => s.Type).HasMaxLength(100).IsUnicode(true);
+                entity.Property(s => s.Description).HasMaxLength(500).IsUnicode(true);
+                entity.Property(s => s.ExpiredDate).IsRequired(false);
             });
             #endregion
 

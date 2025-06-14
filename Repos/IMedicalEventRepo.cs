@@ -8,8 +8,8 @@ namespace Repos
     {
         Task<List<MedicalEvent>> GetAllMedicalEventsAsync();
         Task<MedicalEvent?> GetMedicalEventByIdAsync(int eventId);
-        Task<bool> CreateMedicalEventAsync(MedicalEvent medicalEvent, List<int> medicationIds);
-        Task<bool> UpdateMedicalEventAsync(MedicalEvent medicalEvent, List<int>? medicationIds);
+        Task<bool> CreateMedicalEventAsync(MedicalEvent medicalEvent, List<int>? medicationIds, List<int>? medicalSupplyIds);
+        Task<bool> UpdateMedicalEventAsync(MedicalEvent medicalEvent, List<int>? medicationIds, List<int>? medicalSupplyIds);
         Task<bool> DeleteMedicalEventAsync(int eventId);
     }
 }

@@ -1,6 +1,9 @@
 using BOs.Data;
 using BOs.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DAOs
 {
@@ -32,6 +35,7 @@ namespace DAOs
                 .Include(me => me.Student)
                 .Include(me => me.Nurse)
                 .Include(me => me.Medications)
+                .Include(me => me.MedicalSupplies)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -42,11 +46,12 @@ namespace DAOs
                 .Include(me => me.Student)
                 .Include(me => me.Nurse)
                 .Include(me => me.Medications)
+                .Include(me => me.MedicalSupplies)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(me => me.MedicalEventId == eventId);
         }
 
-        public async Task<bool> CreateMedicalEventAsync(MedicalEvent medicalEvent, List<int> medicationIds)
+        public async Task<bool> CreateMedicalEventAsync(MedicalEvent medicalEvent, List<int>? medicationIds, List<int>? medicalSupplyIds)
         {
             // Kiểm tra StudentId, NurseId
             var studentExists = await _context.Students.AnyAsync(s => s.StudentId == medicalEvent.StudentId);
@@ -60,15 +65,31 @@ namespace DAOs
                 var medications = await _context.Medications.Where(m => medicationIds.Contains(m.MedicationId)).ToListAsync();
                 medicalEvent.Medications = medications;
             }
+            else
+            {
+                medicalEvent.Medications = new List<Medication>();
+            }
+
+            // Gán danh sách thiết bị y tế
+            if (medicalSupplyIds != null && medicalSupplyIds.Count > 0)
+            {
+                var supplies = await _context.MedicalSupplies.Where(s => medicalSupplyIds.Contains(s.MedicalSupplyId)).ToListAsync();
+                medicalEvent.MedicalSupplies = supplies;
+            }
+            else
+            {
+                medicalEvent.MedicalSupplies = new List<MedicalSupply>();
+            }
 
             await _context.MedicalEvents.AddAsync(medicalEvent);
             return await _context.SaveChangesAsync() > 0;
         }
 
-        public async Task<bool> UpdateMedicalEventAsync(MedicalEvent medicalEvent, List<int>? medicationIds)
+        public async Task<bool> UpdateMedicalEventAsync(MedicalEvent medicalEvent, List<int>? medicationIds, List<int>? medicalSupplyIds)
         {
             var existing = await _context.MedicalEvents
                 .Include(me => me.Medications)
+                .Include(me => me.MedicalSupplies)
                 .FirstOrDefaultAsync(me => me.MedicalEventId == medicalEvent.MedicalEventId);
             if (existing == null)
                 return false;
@@ -83,6 +104,13 @@ namespace DAOs
             {
                 var medications = await _context.Medications.Where(m => medicationIds.Contains(m.MedicationId)).ToListAsync();
                 existing.Medications = medications;
+            }
+
+            // Cập nhật danh sách thiết bị y tế nếu có truyền lên
+            if (medicalSupplyIds != null)
+            {
+                var supplies = await _context.MedicalSupplies.Where(s => medicalSupplyIds.Contains(s.MedicalSupplyId)).ToListAsync();
+                existing.MedicalSupplies = supplies;
             }
 
             _context.MedicalEvents.Update(existing);

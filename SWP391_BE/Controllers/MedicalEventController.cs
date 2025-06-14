@@ -17,7 +17,7 @@ namespace SWP391_BE.Controllers
         private readonly IMedicalEventService _medicalEventService;
         private readonly IAccountService _accountService;
 
-        public MedicalEventController(IMedicalEventService medicalEventService, IAccountService accountService, IHttpContextAccessor httpContextAccessor)
+        public MedicalEventController(IMedicalEventService medicalEventService, IAccountService accountService)
         {
             _medicalEventService = medicalEventService;
             _accountService = accountService;
@@ -38,6 +38,8 @@ namespace SWP391_BE.Controllers
                 NurseName = me.Nurse?.Fullname,
                 MedicationIds = me.Medications?.Select(m => m.MedicationId).ToList(),
                 MedicationNames = me.Medications?.Select(m => m.Name).ToList(),
+                MedicalSupplyIds = me.MedicalSupplies?.Select(s => s.MedicalSupplyId).ToList(),
+                MedicalSupplyNames = me.MedicalSupplies?.Select(s => s.Name).ToList(),
                 me.Type,
                 me.Description,
                 me.Note,
@@ -63,6 +65,8 @@ namespace SWP391_BE.Controllers
                 NurseName = medicalEvent.Nurse?.Fullname,
                 MedicationIds = medicalEvent.Medications?.Select(m => m.MedicationId).ToList(),
                 MedicationNames = medicalEvent.Medications?.Select(m => m.Name).ToList(),
+                MedicalSupplyIds = medicalEvent.MedicalSupplies?.Select(s => s.MedicalSupplyId).ToList(),
+                MedicalSupplyNames = medicalEvent.MedicalSupplies?.Select(s => s.Name).ToList(),
                 medicalEvent.Type,
                 medicalEvent.Description,
                 medicalEvent.Note,
@@ -96,7 +100,11 @@ namespace SWP391_BE.Controllers
                 Date = dto.Date
             };
 
-            var created = await _medicalEventService.CreateMedicalEventAsync(medicalEvent, dto.MedicationIds);
+            var created = await _medicalEventService.CreateMedicalEventAsync(
+                medicalEvent,
+                dto.MedicationIds,
+                dto.MedicalSupplyIds
+            );
             if (!created)
                 return BadRequest(new { message = "Failed to create medical event." });
 
@@ -129,7 +137,11 @@ namespace SWP391_BE.Controllers
             if (dto.Date.HasValue && dto.Date.Value != medicalEvent.Date)
                 medicalEvent.Date = dto.Date.Value;
 
-            var updated = await _medicalEventService.UpdateMedicalEventAsync(medicalEvent, dto.MedicationIds);
+            var updated = await _medicalEventService.UpdateMedicalEventAsync(
+                medicalEvent,
+                dto.MedicationIds,
+                dto.MedicalSupplyIds
+            );
             if (!updated)
                 return BadRequest(new { message = "Failed to update medical event." });
 

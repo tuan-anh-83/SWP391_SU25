@@ -51,6 +51,20 @@ namespace Services
         {
             return await _studentRepo.DeleteStudentAsync(id);
         }
-    }
 
+        public async Task<List<Student>> GetStudentsByParentIdAsync(int parentId)
+        {
+            return await _studentRepo.GetStudentsByParentIdAsync(parentId);
+        }
+
+        public async Task<List<Student>> GetStudentsByClassIdAsync(int classId)
+        {
+            return await _studentRepo.GetStudentsByClassIdAsync(classId);
+        }
+
+        public async Task<List<Student>> GetStudentsByClassIdsAsync(List<int> classIds)
+        {
+            return await _studentRepo.GetStudentsByClassIdsAsync(classIds);
+        }
+    }
 }

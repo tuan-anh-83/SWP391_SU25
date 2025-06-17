@@ -1,6 +1,9 @@
 using BOs.Data;
 using BOs.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DAOs
 {
@@ -32,6 +35,7 @@ namespace DAOs
                 .Include(me => me.Student)
                 .Include(me => me.Nurse)
                 .Include(me => me.Medications)
+                .Include(me => me.MedicalSupplies)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -42,11 +46,12 @@ namespace DAOs
                 .Include(me => me.Student)
                 .Include(me => me.Nurse)
                 .Include(me => me.Medications)
+                .Include(me => me.MedicalSupplies)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(me => me.MedicalEventId == eventId);
         }
 
-        public async Task<bool> CreateMedicalEventAsync(MedicalEvent medicalEvent, List<int> medicationIds)
+        public async Task<bool> CreateMedicalEventAsync(MedicalEvent medicalEvent, List<int>? medicationIds, List<int>? medicalSupplyIds)
         {
             // Kiểm tra StudentId, NurseId
             var studentExists = await _context.Students.AnyAsync(s => s.StudentId == medicalEvent.StudentId);
@@ -60,15 +65,31 @@ namespace DAOs
                 var medications = await _context.Medications.Where(m => medicationIds.Contains(m.MedicationId)).ToListAsync();
                 medicalEvent.Medications = medications;
             }
+            else
+            {
+                medicalEvent.Medications = new List<Medication>();
+            }
+
+            // Gán danh sách thiết bị y tế
+            if (medicalSupplyIds != null && medicalSupplyIds.Count > 0)
+            {
+                var supplies = await _context.MedicalSupplies.Where(s => medicalSupplyIds.Contains(s.MedicalSupplyId)).ToListAsync();
+                medicalEvent.MedicalSupplies = supplies;
+            }
+            else
+            {
+                medicalEvent.MedicalSupplies = new List<MedicalSupply>();
+            }
 
             await _context.MedicalEvents.AddAsync(medicalEvent);
             return await _context.SaveChangesAsync() > 0;
         }
 
-        public async Task<bool> UpdateMedicalEventAsync(MedicalEvent medicalEvent, List<int>? medicationIds)
+        public async Task<bool> UpdateMedicalEventAsync(MedicalEvent medicalEvent, List<int>? medicationIds, List<int>? medicalSupplyIds)
         {
             var existing = await _context.MedicalEvents
                 .Include(me => me.Medications)
+                .Include(me => me.MedicalSupplies)
                 .FirstOrDefaultAsync(me => me.MedicalEventId == medicalEvent.MedicalEventId);
             if (existing == null)
                 return false;
@@ -85,6 +106,13 @@ namespace DAOs
                 existing.Medications = medications;
             }
 
+            // Cập nhật danh sách thiết bị y tế nếu có truyền lên
+            if (medicalSupplyIds != null)
+            {
+                var supplies = await _context.MedicalSupplies.Where(s => medicalSupplyIds.Contains(s.MedicalSupplyId)).ToListAsync();
+                existing.MedicalSupplies = supplies;
+            }
+
             _context.MedicalEvents.Update(existing);
             return await _context.SaveChangesAsync() > 0;
         }
@@ -98,5 +126,30 @@ namespace DAOs
             _context.MedicalEvents.Remove(medicalEvent);
             return await _context.SaveChangesAsync() > 0;
         }
+
+        public async Task<List<MedicalEvent>> GetMedicalEventsByParentIdAsync(int parentId)
+        {
+            // Lấy tất cả StudentId có ParentId tương ứng
+            var studentIds = await _context.Students
+                .Where(s => s.ParentId == parentId)
+                .Select(s => s.StudentId)
+                .ToListAsync();
+
+            // Truy vấn tất cả MedicalEvent có StudentId nằm trong danh sách trên
+            var medicalEvents = await _context.MedicalEvents
+                .Include(e => e.Student)
+                .Include(e => e.Nurse)
+                .Include(e => e.Medications)
+                .Include(e => e.MedicalSupplies)
+                .Include(e => e.Date)
+                .Include(e => e.Description)
+                .Include(e => e.Note)
+                .Include(e => e.Type)
+                .Where(e => studentIds.Contains(e.StudentId))
+                .ToListAsync();
+
+            return medicalEvents;
+        }
+
     }
 }

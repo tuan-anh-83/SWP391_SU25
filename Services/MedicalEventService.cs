@@ -1,4 +1,4 @@
-using BOs.Models;
+    using BOs.Models;
 using Repos;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -14,29 +14,14 @@ namespace Services
             _repo = repo;
         }
 
-        public async Task<List<MedicalEvent>> GetAllMedicalEventsAsync()
-        {
-            return await _repo.GetAllMedicalEventsAsync();
-        }
-
-        public async Task<MedicalEvent?> GetMedicalEventByIdAsync(int eventId)
-        {
-            return await _repo.GetMedicalEventByIdAsync(eventId);
-        }
-
-        public async Task<bool> CreateMedicalEventAsync(MedicalEvent medicalEvent, List<int> medicationIds)
-        {
-            return await _repo.CreateMedicalEventAsync(medicalEvent, medicationIds);
-        }
-
-        public async Task<bool> UpdateMedicalEventAsync(MedicalEvent medicalEvent, List<int>? medicationIds)
-        {
-            return await _repo.UpdateMedicalEventAsync(medicalEvent, medicationIds);
-        }
-
-        public async Task<bool> DeleteMedicalEventAsync(int eventId)
-        {
-            return await _repo.DeleteMedicalEventAsync(eventId);
-        }
+        public Task<List<MedicalEvent>> GetAllMedicalEventsAsync() => _repo.GetAllMedicalEventsAsync();
+        public Task<MedicalEvent?> GetMedicalEventByIdAsync(int eventId) => _repo.GetMedicalEventByIdAsync(eventId);
+        public Task<bool> CreateMedicalEventAsync(MedicalEvent medicalEvent, List<int>? medicationIds, List<int>? medicalSupplyIds)
+            => _repo.CreateMedicalEventAsync(medicalEvent, medicationIds, medicalSupplyIds);
+        public Task<bool> UpdateMedicalEventAsync(MedicalEvent medicalEvent, List<int>? medicationIds, List<int>? medicalSupplyIds)
+            => _repo.UpdateMedicalEventAsync(medicalEvent, medicationIds, medicalSupplyIds);
+        public Task<bool> DeleteMedicalEventAsync(int eventId) => _repo.DeleteMedicalEventAsync(eventId);
+        public Task<List<MedicalEvent>> GetMedicalEventsByParentIdAsync(int parentId) 
+            => _repo.GetMedicalEventsByParentIdAsync(parentId);
     }
 }

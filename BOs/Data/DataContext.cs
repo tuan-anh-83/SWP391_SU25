@@ -33,6 +33,12 @@ namespace BOs.Data
         public DbSet<Medication> Medications { get; set; }
         public DbSet<ParentMedicationRequest> ParentMedicationRequests { get; set; }
         public DbSet<ParentMedicationDetail> ParentMedicationDetails { get; set; }
+        public DbSet<MedicalSupply> MedicalSupplies { get; set; }
+        public DbSet<Vaccine> Vaccines { get; set; }
+        public DbSet<VaccinationCampaign> VaccinationCampaigns { get; set; }
+        public DbSet<VaccinationConsent> VaccinationConsents { get; set; }
+        public DbSet<VaccinationRecord> VaccinationRecords { get; set; }
+        public DbSet<VaccinationFollowUp> VaccinationFollowUps { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer(GetConnectionString());
@@ -105,6 +111,8 @@ namespace BOs.Data
                 entity.Property(a => a.CreatedAt).IsRequired();
                 entity.Property(a => a.UpdateAt).IsRequired();
                 entity.Property(a => a.Status).IsRequired();
+
+                entity.Property(a => a.Image).HasColumnType("varbinary(max)"); // Lưu file nhị phân
 
                 entity.HasMany(a => a.Students)
                       .WithOne(s => s.Parent)
@@ -341,14 +349,16 @@ namespace BOs.Data
                       .WithMany()
                       .HasForeignKey(me => me.NurseId)
                       .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasMany(me => me.Medications)
+                      .WithMany(m => m.MedicalEvents)
+                      .UsingEntity(j => j.ToTable("MedicalEventMedication"));
+
+                entity.HasMany(e => e.MedicalSupplies)
+                      .WithMany(s => s.MedicalEvents)
+                      .UsingEntity(j => j.ToTable("MedicalEventMedicalSupply"));
             });
             #endregion
-
-            // Many-to-Many: MedicalEvent <-> Medication
-            modelBuilder.Entity<MedicalEvent>()
-                .HasMany(me => me.Medications)
-                .WithMany(m => m.MedicalEvents)
-                .UsingEntity(j => j.ToTable("MedicalEventMedication"));
 
             #region ParentMedicationRequest
             modelBuilder.Entity<ParentMedicationRequest>(entity =>
@@ -401,6 +411,117 @@ namespace BOs.Data
                 entity.Property(m => m.Usage).HasMaxLength(500).IsUnicode(true);
                 entity.Property(m => m.Dosage).HasMaxLength(100).IsUnicode(true);
                 entity.Property(m => m.Note).HasMaxLength(500).IsUnicode(true);
+            });
+            #endregion
+
+            #region MedicalSupply 
+            modelBuilder.Entity<MedicalSupply>(entity =>
+            {
+                entity.ToTable("MedicalSupply");
+                entity.HasKey(s => s.MedicalSupplyId);
+                entity.Property(s => s.Name).IsRequired().HasMaxLength(255).IsUnicode(true);
+                entity.Property(s => s.Type).HasMaxLength(100).IsUnicode(true);
+                entity.Property(s => s.Description).HasMaxLength(500).IsUnicode(true);
+                entity.Property(s => s.ExpiredDate).IsRequired(false);
+            });
+            #endregion
+
+            #region Vaccine
+            modelBuilder.Entity<Vaccine>(entity =>
+            {
+                entity.ToTable("Vaccine");
+                entity.HasKey(v => v.VaccineId);
+                entity.Property(v => v.Name).IsRequired().HasMaxLength(255).IsUnicode(true);
+                entity.Property(v => v.Description).IsRequired().HasMaxLength(1000).IsUnicode(true);
+                entity.HasMany(v => v.Campaigns)
+                      .WithOne(c => c.Vaccine)
+                      .HasForeignKey(c => c.VaccineId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+            #endregion
+
+            #region VaccinationCampaign
+            modelBuilder.Entity<VaccinationCampaign>(entity =>
+            {
+                entity.ToTable("VaccinationCampaign");
+                entity.HasKey(c => c.CampaignId);
+                entity.Property(c => c.Name).IsRequired().HasMaxLength(255).IsUnicode(true);
+                entity.Property(c => c.Description).HasMaxLength(1000).IsUnicode(true);
+                entity.Property(c => c.Date).IsRequired();
+                entity.HasOne(c => c.Vaccine)
+                      .WithMany(v => v.Campaigns)
+                      .HasForeignKey(c => c.VaccineId)
+                      .OnDelete(DeleteBehavior.Restrict);
+                entity.HasMany(c => c.Consents)
+                      .WithOne(consent => consent.Campaign)
+                      .HasForeignKey(consent => consent.CampaignId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasMany(c => c.Records)
+                      .WithOne(r => r.Campaign)
+                      .HasForeignKey(r => r.CampaignId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+            #endregion
+
+            #region VaccinationConsent
+            modelBuilder.Entity<VaccinationConsent>(entity =>
+            {
+                entity.ToTable("VaccinationConsent");
+                entity.HasKey(c => c.ConsentId);
+                entity.Property(c => c.IsAgreed).IsRequired(false);
+                entity.Property(c => c.Note).HasMaxLength(1000).IsUnicode(true);
+                entity.Property(c => c.DateConfirmed).IsRequired(false);
+                entity.HasOne(c => c.Campaign)
+                      .WithMany(ca => ca.Consents)
+                      .HasForeignKey(c => c.CampaignId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(c => c.Student)
+                      .WithMany()
+                      .HasForeignKey(c => c.StudentId)
+                      .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(c => c.Parent)
+                      .WithMany()
+                      .HasForeignKey(c => c.ParentId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+            #endregion
+
+            #region VaccinationRecord
+            modelBuilder.Entity<VaccinationRecord>(entity =>
+            {
+                entity.ToTable("VaccinationRecord");
+                entity.HasKey(r => r.RecordId);
+                entity.Property(r => r.Result).IsRequired().HasMaxLength(50).IsUnicode(true);
+                entity.Property(r => r.ImmediateReaction).HasMaxLength(500).IsUnicode(true);
+                entity.Property(r => r.Note).HasMaxLength(1000).IsUnicode(true);
+                entity.Property(r => r.DateInjected).IsRequired();
+                entity.HasOne(r => r.Campaign)
+                      .WithMany(c => c.Records)
+                      .HasForeignKey(r => r.CampaignId)
+                      .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(r => r.Student)
+                      .WithMany()
+                      .HasForeignKey(r => r.StudentId)
+                      .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(r => r.Nurse)
+                      .WithMany()
+                      .HasForeignKey(r => r.NurseId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+            #endregion
+
+            #region VaccinationFollowUp
+            modelBuilder.Entity<VaccinationFollowUp>(entity =>
+            {
+                entity.ToTable("VaccinationFollowUp");
+                entity.HasKey(f => f.FollowUpId);
+                entity.Property(f => f.Reaction).HasMaxLength(500).IsUnicode(true);
+                entity.Property(f => f.Note).HasMaxLength(1000).IsUnicode(true);
+                entity.Property(f => f.Date).IsRequired();
+                entity.HasOne(f => f.Record)
+                      .WithMany()
+                      .HasForeignKey(f => f.RecordId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
             #endregion
 

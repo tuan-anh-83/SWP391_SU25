@@ -34,7 +34,7 @@ namespace DAOs
         public async Task<Student?> GetStudentByCodeAsync(string studentCode)
         {
             return await _context.Students
-                                 .Include(s => s.Class) 
+                                 .Include(s => s.Class)
                                  .FirstOrDefaultAsync(s => s.StudentCode == studentCode);
         }
 
@@ -103,6 +103,28 @@ namespace DAOs
             _context.Students.Remove(student);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<List<Student>> GetStudentsByParentIdAsync(int parentId)
+        {
+            return await _context.Students
+                .Include(s => s.Class)
+                .Where(s => s.ParentId == parentId)
+                .ToListAsync();
+        }
+
+        public async Task<List<Student>> GetStudentsByClassIdAsync(int classId)
+        {
+            return await _context.Students
+                .Where(s => s.ClassId == classId)
+                .ToListAsync();
+        }
+
+        public async Task<List<Student>> GetStudentsByClassIdsAsync(List<int> classIds)
+        {
+            return await _context.Students
+                .Where(s => classIds.Contains(s.ClassId))
+                .ToListAsync();
         }
     }
 }

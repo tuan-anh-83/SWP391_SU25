@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BOs.Migrations
 {
     /// <inheritdoc />
-    public partial class newdb : Migration
+    public partial class db17625 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -37,6 +37,22 @@ namespace BOs.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Class", x => x.ClassId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MedicalSupply",
+                columns: table => new
+                {
+                    MedicalSupplyId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    ExpiredDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MedicalSupply", x => x.MedicalSupplyId);
                 });
 
             migrationBuilder.CreateTable(
@@ -69,6 +85,20 @@ namespace BOs.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Vaccine",
+                columns: table => new
+                {
+                    VaccineId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Vaccine", x => x.VaccineId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Account",
                 columns: table => new
                 {
@@ -79,6 +109,7 @@ namespace BOs.Migrations
                     Password = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: false),
                     Fullname = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
                     Address = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    Image = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: false),
                     PhoneNumber = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -94,6 +125,28 @@ namespace BOs.Migrations
                         principalTable: "Role",
                         principalColumn: "RoleID",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "VaccinationCampaign",
+                columns: table => new
+                {
+                    CampaignId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    VaccineId = table.Column<int>(type: "int", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VaccinationCampaign", x => x.CampaignId);
+                    table.ForeignKey(
+                        name: "FK_VaccinationCampaign_Vaccine_VaccineId",
+                        column: x => x.VaccineId,
+                        principalTable: "Vaccine",
+                        principalColumn: "VaccineId",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -225,7 +278,7 @@ namespace BOs.Migrations
                     NurseId = table.Column<int>(type: "int", nullable: false),
                     Type = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
-                    Note = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    Note = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -273,6 +326,103 @@ namespace BOs.Migrations
                         principalTable: "Student",
                         principalColumn: "StudentId",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "VaccinationConsent",
+                columns: table => new
+                {
+                    ConsentId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CampaignId = table.Column<int>(type: "int", nullable: false),
+                    StudentId = table.Column<int>(type: "int", nullable: false),
+                    ParentId = table.Column<int>(type: "int", nullable: false),
+                    IsAgreed = table.Column<bool>(type: "bit", nullable: true),
+                    Note = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    DateConfirmed = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VaccinationConsent", x => x.ConsentId);
+                    table.ForeignKey(
+                        name: "FK_VaccinationConsent_Account_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "Account",
+                        principalColumn: "AccountID",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_VaccinationConsent_Student_StudentId",
+                        column: x => x.StudentId,
+                        principalTable: "Student",
+                        principalColumn: "StudentId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_VaccinationConsent_VaccinationCampaign_CampaignId",
+                        column: x => x.CampaignId,
+                        principalTable: "VaccinationCampaign",
+                        principalColumn: "CampaignId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "VaccinationRecord",
+                columns: table => new
+                {
+                    RecordId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CampaignId = table.Column<int>(type: "int", nullable: false),
+                    StudentId = table.Column<int>(type: "int", nullable: false),
+                    NurseId = table.Column<int>(type: "int", nullable: false),
+                    DateInjected = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Result = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    ImmediateReaction = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Note = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VaccinationRecord", x => x.RecordId);
+                    table.ForeignKey(
+                        name: "FK_VaccinationRecord_Account_NurseId",
+                        column: x => x.NurseId,
+                        principalTable: "Account",
+                        principalColumn: "AccountID",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_VaccinationRecord_Student_StudentId",
+                        column: x => x.StudentId,
+                        principalTable: "Student",
+                        principalColumn: "StudentId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_VaccinationRecord_VaccinationCampaign_CampaignId",
+                        column: x => x.CampaignId,
+                        principalTable: "VaccinationCampaign",
+                        principalColumn: "CampaignId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MedicalEventMedicalSupply",
+                columns: table => new
+                {
+                    MedicalEventsMedicalEventId = table.Column<int>(type: "int", nullable: false),
+                    MedicalSuppliesMedicalSupplyId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MedicalEventMedicalSupply", x => new { x.MedicalEventsMedicalEventId, x.MedicalSuppliesMedicalSupplyId });
+                    table.ForeignKey(
+                        name: "FK_MedicalEventMedicalSupply_MedicalEvent_MedicalEventsMedicalEventId",
+                        column: x => x.MedicalEventsMedicalEventId,
+                        principalTable: "MedicalEvent",
+                        principalColumn: "MedicalEventId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_MedicalEventMedicalSupply_MedicalSupply_MedicalSuppliesMedicalSupplyId",
+                        column: x => x.MedicalSuppliesMedicalSupplyId,
+                        principalTable: "MedicalSupply",
+                        principalColumn: "MedicalSupplyId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -324,6 +474,28 @@ namespace BOs.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "VaccinationFollowUp",
+                columns: table => new
+                {
+                    FollowUpId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RecordId = table.Column<int>(type: "int", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Reaction = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Note = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VaccinationFollowUp", x => x.FollowUpId);
+                    table.ForeignKey(
+                        name: "FK_VaccinationFollowUp_VaccinationRecord_RecordId",
+                        column: x => x.RecordId,
+                        principalTable: "VaccinationRecord",
+                        principalColumn: "RecordId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.InsertData(
                 table: "Role",
                 columns: new[] { "RoleID", "RoleName" },
@@ -371,6 +543,11 @@ namespace BOs.Migrations
                 column: "StudentId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_MedicalEventMedicalSupply_MedicalSuppliesMedicalSupplyId",
+                table: "MedicalEventMedicalSupply",
+                column: "MedicalSuppliesMedicalSupplyId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_MedicalEventMedication_MedicationsMedicationId",
                 table: "MedicalEventMedication",
                 column: "MedicationsMedicationId");
@@ -410,6 +587,46 @@ namespace BOs.Migrations
                 table: "Student",
                 column: "StudentCode",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VaccinationCampaign_VaccineId",
+                table: "VaccinationCampaign",
+                column: "VaccineId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VaccinationConsent_CampaignId",
+                table: "VaccinationConsent",
+                column: "CampaignId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VaccinationConsent_ParentId",
+                table: "VaccinationConsent",
+                column: "ParentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VaccinationConsent_StudentId",
+                table: "VaccinationConsent",
+                column: "StudentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VaccinationFollowUp_RecordId",
+                table: "VaccinationFollowUp",
+                column: "RecordId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VaccinationRecord_CampaignId",
+                table: "VaccinationRecord",
+                column: "CampaignId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VaccinationRecord_NurseId",
+                table: "VaccinationRecord",
+                column: "NurseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_VaccinationRecord_StudentId",
+                table: "VaccinationRecord",
+                column: "StudentId");
         }
 
         /// <inheritdoc />
@@ -422,6 +639,9 @@ namespace BOs.Migrations
                 name: "HealthRecord");
 
             migrationBuilder.DropTable(
+                name: "MedicalEventMedicalSupply");
+
+            migrationBuilder.DropTable(
                 name: "MedicalEventMedication");
 
             migrationBuilder.DropTable(
@@ -431,7 +651,16 @@ namespace BOs.Migrations
                 name: "PasswordResetToken");
 
             migrationBuilder.DropTable(
+                name: "VaccinationConsent");
+
+            migrationBuilder.DropTable(
+                name: "VaccinationFollowUp");
+
+            migrationBuilder.DropTable(
                 name: "Category");
+
+            migrationBuilder.DropTable(
+                name: "MedicalSupply");
 
             migrationBuilder.DropTable(
                 name: "MedicalEvent");
@@ -443,13 +672,22 @@ namespace BOs.Migrations
                 name: "ParentMedicationRequest");
 
             migrationBuilder.DropTable(
+                name: "VaccinationRecord");
+
+            migrationBuilder.DropTable(
                 name: "Student");
+
+            migrationBuilder.DropTable(
+                name: "VaccinationCampaign");
 
             migrationBuilder.DropTable(
                 name: "Account");
 
             migrationBuilder.DropTable(
                 name: "Class");
+
+            migrationBuilder.DropTable(
+                name: "Vaccine");
 
             migrationBuilder.DropTable(
                 name: "Role");

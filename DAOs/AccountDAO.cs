@@ -103,7 +103,7 @@ namespace DAOs
 
             bool hasChanges = false;
 
-            // Update all relevant fields
+            // Update các trường thông tin cơ bản
             if (!string.IsNullOrEmpty(account.Fullname) && !account.Fullname.Equals(existingAccount.Fullname))
             {
                 existingAccount.Fullname = account.Fullname;
@@ -113,12 +113,6 @@ namespace DAOs
             if (!string.IsNullOrEmpty(account.Email) && !account.Email.Equals(existingAccount.Email))
             {
                 existingAccount.Email = account.Email;
-                hasChanges = true;
-            }
-
-            if (!string.IsNullOrEmpty(account.Fullname) && !account.Fullname.Equals(existingAccount.Fullname))
-            {
-                existingAccount.Fullname = account.Fullname;
                 hasChanges = true;
             }
 
@@ -140,13 +134,11 @@ namespace DAOs
                 hasChanges = true;
             }
 
-            // Handle password update
+            // Update password nếu có
             if (!string.IsNullOrEmpty(account.Password))
             {
-                // Check if password is already hashed (BCrypt format starts with $2a$, $2b$, $2x$, etc.)
                 if (account.Password.StartsWith("$2a$") || account.Password.StartsWith("$2b$") || account.Password.StartsWith("$2x$") || account.Password.StartsWith("$2y$"))
                 {
-                    // Password is already hashed, use as is
                     if (!account.Password.Equals(existingAccount.Password))
                     {
                         existingAccount.Password = account.Password;
@@ -155,7 +147,6 @@ namespace DAOs
                 }
                 else
                 {
-                    // Password is plain text, hash it
                     var hashedPassword = BCrypt.Net.BCrypt.HashPassword(account.Password);
                     if (!hashedPassword.Equals(existingAccount.Password))
                     {
@@ -165,10 +156,17 @@ namespace DAOs
                 }
             }
 
-            // Only update Status if it's explicitly provided and different
+            // Update Status nếu có
             if (!string.IsNullOrEmpty(account.Status) && !account.Status.Equals(existingAccount.Status, StringComparison.OrdinalIgnoreCase))
             {
                 existingAccount.Status = account.Status;
+                hasChanges = true;
+            }
+
+            // --- Cập nhật ảnh đại diện (Image) ---
+            if (account.Image != null && (existingAccount.Image == null || !account.Image.SequenceEqual(existingAccount.Image)))
+            {
+                existingAccount.Image = account.Image;
                 hasChanges = true;
             }
 
@@ -196,7 +194,8 @@ namespace DAOs
         {
             return await _context.Accounts
                 .Include(a => a.Role)
-                .Include(ap => ap.Students)
+                .Include(a => a.Students)
+                    .ThenInclude(s => s.Class) 
                 .AsNoTracking()
                 .FirstOrDefaultAsync(a => a.AccountID == accountId);
         }

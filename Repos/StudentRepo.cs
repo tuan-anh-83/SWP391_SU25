@@ -44,6 +44,13 @@ namespace Repos
         {
             return await StudentDAO.Instance.DeleteStudentAsync(id);
         }
+
+        public Task<List<Student>> GetStudentsByParentIdAsync(int parentId) => StudentDAO.Instance.GetStudentsByParentIdAsync(parentId);
+
+        public Task<List<Student>> GetStudentsByClassIdAsync(int classId) => StudentDAO.Instance.GetStudentsByClassIdAsync(classId);
+
+        public Task<List<Student>> GetStudentsByClassIdsAsync(List<int> classIds)
+            => StudentDAO.Instance.GetStudentsByClassIdsAsync(classIds);
     }
 
 }

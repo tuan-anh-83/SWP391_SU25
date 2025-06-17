@@ -7,29 +7,14 @@ namespace Repos
 {
     public class MedicalEventRepo : IMedicalEventRepo
     {
-        public async Task<List<MedicalEvent>> GetAllMedicalEventsAsync()
-        {
-            return await MedicalEventDAO.Instance.GetAllMedicalEventsAsync();
-        }
-
-        public async Task<MedicalEvent?> GetMedicalEventByIdAsync(int eventId)
-        {
-            return await MedicalEventDAO.Instance.GetMedicalEventByIdAsync(eventId);
-        }
-
-        public async Task<bool> CreateMedicalEventAsync(MedicalEvent medicalEvent, List<int> medicationIds)
-        {
-            return await MedicalEventDAO.Instance.CreateMedicalEventAsync(medicalEvent, medicationIds);
-        }
-
-        public async Task<bool> UpdateMedicalEventAsync(MedicalEvent medicalEvent, List<int>? medicationIds)
-        {
-            return await MedicalEventDAO.Instance.UpdateMedicalEventAsync(medicalEvent, medicationIds);
-        }
-
-        public async Task<bool> DeleteMedicalEventAsync(int eventId)
-        {
-            return await MedicalEventDAO.Instance.DeleteMedicalEventAsync(eventId);
-        }
+        public Task<List<MedicalEvent>> GetAllMedicalEventsAsync() => MedicalEventDAO.Instance.GetAllMedicalEventsAsync();
+        public Task<MedicalEvent?> GetMedicalEventByIdAsync(int eventId) => MedicalEventDAO.Instance.GetMedicalEventByIdAsync(eventId);
+        public Task<bool> CreateMedicalEventAsync(MedicalEvent medicalEvent, List<int>? medicationIds, List<int>? medicalSupplyIds)
+            => MedicalEventDAO.Instance.CreateMedicalEventAsync(medicalEvent, medicationIds, medicalSupplyIds);
+        public Task<bool> UpdateMedicalEventAsync(MedicalEvent medicalEvent, List<int>? medicationIds, List<int>? medicalSupplyIds)
+            => MedicalEventDAO.Instance.UpdateMedicalEventAsync(medicalEvent, medicationIds, medicalSupplyIds);
+        public Task<bool> DeleteMedicalEventAsync(int eventId) => MedicalEventDAO.Instance.DeleteMedicalEventAsync(eventId);
+        public Task<List<MedicalEvent>> GetMedicalEventsByParentIdAsync(int parentId) 
+            => MedicalEventDAO.Instance.GetMedicalEventsByParentIdAsync(parentId);
     }
 }

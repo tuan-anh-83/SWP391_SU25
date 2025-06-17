@@ -18,5 +18,6 @@ namespace SWP391_BE.DTO
         [DataType(DataType.PhoneNumber)]
         [CustomPhoneValidation]
         public string? PhoneNumber { get; set; }
+        public IFormFile? Image { get; set; }
     }
 }

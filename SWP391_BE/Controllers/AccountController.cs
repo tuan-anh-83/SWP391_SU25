@@ -371,6 +371,7 @@ namespace SWP391_BE.Controllers
                     return NotFound("Account not found.");
                 if (!account.Status.Equals("Active", StringComparison.OrdinalIgnoreCase))
                     return Unauthorized("Account is not active.");
+
                 var accountInfo = new
                 {
                     account.AccountID,
@@ -378,12 +379,17 @@ namespace SWP391_BE.Controllers
                     account.Fullname,
                     account.Address,
                     account.PhoneNumber,
-                    Student = account.Students.Select(ap => new
+                    // Trả về danh sách tất cả các con
+                    Students = account.Students?.Select(ap => new
                     {
+                        ap.StudentId,
                         ap.Fullname,
                         ap.ClassId,
                         ap.StudentCode,
-                    }).FirstOrDefault()
+                        ap.Gender,
+                        ap.DateOfBirth,
+                        ClassName = ap.Class?.ClassName
+                    }).ToList()
                 };
                 return Ok(accountInfo);
             }
@@ -395,7 +401,7 @@ namespace SWP391_BE.Controllers
 
         [HttpPatch("update")]
         [Authorize(Roles = "Admin,Nurse,Parent")]
-        public async Task<IActionResult> UpdateAccount([FromBody] PartialAccountUpdateRequest updateRequest)
+        public async Task<IActionResult> UpdateAccount([FromForm] PartialAccountUpdateRequest updateRequest)
         {
             if (!ModelState.IsValid)
             {
@@ -426,6 +432,16 @@ namespace SWP391_BE.Controllers
             if (!string.IsNullOrEmpty(updateRequest.PhoneNumber))
                 account.PhoneNumber = updateRequest.PhoneNumber;
 
+            // Xử lý ảnh đại diện nếu có upload
+            if (updateRequest.Image != null && updateRequest.Image.Length > 0)
+            {
+                using (var ms = new MemoryStream())
+                {
+                    await updateRequest.Image.CopyToAsync(ms);
+                    account.Image = ms.ToArray();
+                }
+            }
+
             // Update the UpdatedAt timestamp
             account.UpdateAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone);
 
@@ -435,6 +451,12 @@ namespace SWP391_BE.Controllers
                 _logger.LogError("Failed to update account for AccountID: {AccountId}", accountId);
                 return StatusCode(500, "A problem occurred while processing your request.");
             }
+
+            // Trả về link ảnh đại diện (nếu có)
+            string? avatarUrl = account.Image != null
+                ? $"{Request.Scheme}://{Request.Host}/api/accounts/avatar/{account.AccountID}"
+                : null;
+
             return Ok(new
             {
                 message = "Account updated successfully.",
@@ -444,7 +466,8 @@ namespace SWP391_BE.Controllers
                     account.Email,
                     account.Fullname,
                     account.Address,
-                    account.PhoneNumber
+                    account.PhoneNumber,
+                    AvatarUrl = avatarUrl
                 }
             });
         }

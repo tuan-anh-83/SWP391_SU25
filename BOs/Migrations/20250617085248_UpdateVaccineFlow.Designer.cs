@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BOs.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250611151331_UpdateDatabase")]
-    partial class UpdateDatabase
+    [Migration("20250617085248_UpdateVaccineFlow")]
+    partial class UpdateVaccineFlow
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -245,11 +245,7 @@ namespace BOs.Migrations
                         .IsUnicode(true)
                         .HasColumnType("nvarchar(1000)");
 
-                    b.Property<int?>("MedicationId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Note")
-                        .IsRequired()
                         .HasMaxLength(1000)
                         .IsUnicode(true)
                         .HasColumnType("nvarchar(1000)");
@@ -268,13 +264,43 @@ namespace BOs.Migrations
 
                     b.HasKey("MedicalEventId");
 
-                    b.HasIndex("MedicationId");
-
                     b.HasIndex("NurseId");
 
                     b.HasIndex("StudentId");
 
                     b.ToTable("MedicalEvent", (string)null);
+                });
+
+            modelBuilder.Entity("BOs.Models.MedicalSupply", b =>
+                {
+                    b.Property<int>("MedicalSupplyId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MedicalSupplyId"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("ExpiredDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Type")
+                        .HasMaxLength(100)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("MedicalSupplyId");
+
+                    b.ToTable("MedicalSupply", (string)null);
                 });
 
             modelBuilder.Entity("BOs.Models.Medication", b =>
@@ -309,6 +335,99 @@ namespace BOs.Migrations
                     b.HasKey("MedicationId");
 
                     b.ToTable("Medication", (string)null);
+                });
+
+            modelBuilder.Entity("BOs.Models.ParentMedicationDetail", b =>
+                {
+                    b.Property<int>("MedicationDetailId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MedicationDetailId"));
+
+                    b.Property<string>("Dosage")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("ExpiredDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("RequestId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Usage")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("MedicationDetailId");
+
+                    b.HasIndex("RequestId");
+
+                    b.ToTable("ParentMedicationDetail", (string)null);
+                });
+
+            modelBuilder.Entity("BOs.Models.ParentMedicationRequest", b =>
+                {
+                    b.Property<int>("RequestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RequestId"));
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("NurseNote")
+                        .HasMaxLength(1000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("ParentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ParentNote")
+                        .HasMaxLength(1000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("RequestId");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("ParentMedicationRequest", (string)null);
                 });
 
             modelBuilder.Entity("BOs.Models.PasswordResetToken", b =>
@@ -431,6 +550,210 @@ namespace BOs.Migrations
                     b.ToTable("Student", (string)null);
                 });
 
+            modelBuilder.Entity("BOs.Models.VaccinationCampaign", b =>
+                {
+                    b.Property<int>("CampaignId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CampaignId"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("VaccineId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CampaignId");
+
+                    b.HasIndex("VaccineId");
+
+                    b.ToTable("VaccinationCampaign", (string)null);
+                });
+
+            modelBuilder.Entity("BOs.Models.VaccinationConsent", b =>
+                {
+                    b.Property<int>("ConsentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ConsentId"));
+
+                    b.Property<int>("CampaignId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DateConfirmed")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("IsAgreed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("ParentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ConsentId");
+
+                    b.HasIndex("CampaignId");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("VaccinationConsent", (string)null);
+                });
+
+            modelBuilder.Entity("BOs.Models.VaccinationFollowUp", b =>
+                {
+                    b.Property<int>("FollowUpId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FollowUpId"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Reaction")
+                        .HasMaxLength(500)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("RecordId")
+                        .HasColumnType("int");
+
+                    b.HasKey("FollowUpId");
+
+                    b.HasIndex("RecordId");
+
+                    b.ToTable("VaccinationFollowUp", (string)null);
+                });
+
+            modelBuilder.Entity("BOs.Models.VaccinationRecord", b =>
+                {
+                    b.Property<int>("RecordId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RecordId"));
+
+                    b.Property<int>("CampaignId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateInjected")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ImmediateReaction")
+                        .HasMaxLength(500)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("NurseId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Result")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("RecordId");
+
+                    b.HasIndex("CampaignId");
+
+                    b.HasIndex("NurseId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("VaccinationRecord", (string)null);
+                });
+
+            modelBuilder.Entity("BOs.Models.Vaccine", b =>
+                {
+                    b.Property<int>("VaccineId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VaccineId"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("VaccineId");
+
+                    b.ToTable("Vaccine", (string)null);
+                });
+
+            modelBuilder.Entity("MedicalEventMedicalSupply", b =>
+                {
+                    b.Property<int>("MedicalEventsMedicalEventId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MedicalSuppliesMedicalSupplyId")
+                        .HasColumnType("int");
+
+                    b.HasKey("MedicalEventsMedicalEventId", "MedicalSuppliesMedicalSupplyId");
+
+                    b.HasIndex("MedicalSuppliesMedicalSupplyId");
+
+                    b.ToTable("MedicalEventMedicalSupply", (string)null);
+                });
+
+            modelBuilder.Entity("MedicalEventMedication", b =>
+                {
+                    b.Property<int>("MedicalEventsMedicalEventId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MedicationsMedicationId")
+                        .HasColumnType("int");
+
+                    b.HasKey("MedicalEventsMedicalEventId", "MedicationsMedicationId");
+
+                    b.HasIndex("MedicationsMedicationId");
+
+                    b.ToTable("MedicalEventMedication", (string)null);
+                });
+
             modelBuilder.Entity("BOs.Models.Account", b =>
                 {
                     b.HasOne("BOs.Models.Role", "Role")
@@ -482,11 +805,6 @@ namespace BOs.Migrations
 
             modelBuilder.Entity("BOs.Models.MedicalEvent", b =>
                 {
-                    b.HasOne("BOs.Models.Medication", "Medication")
-                        .WithMany("MedicalEvents")
-                        .HasForeignKey("MedicationId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("BOs.Models.Account", "Nurse")
                         .WithMany()
                         .HasForeignKey("NurseId")
@@ -499,9 +817,37 @@ namespace BOs.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Medication");
-
                     b.Navigation("Nurse");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("BOs.Models.ParentMedicationDetail", b =>
+                {
+                    b.HasOne("BOs.Models.ParentMedicationRequest", "Request")
+                        .WithMany("Medications")
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Request");
+                });
+
+            modelBuilder.Entity("BOs.Models.ParentMedicationRequest", b =>
+                {
+                    b.HasOne("BOs.Models.Account", "Parent")
+                        .WithMany()
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BOs.Models.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Parent");
 
                     b.Navigation("Student");
                 });
@@ -535,6 +881,112 @@ namespace BOs.Migrations
                     b.Navigation("Parent");
                 });
 
+            modelBuilder.Entity("BOs.Models.VaccinationCampaign", b =>
+                {
+                    b.HasOne("BOs.Models.Vaccine", "Vaccine")
+                        .WithMany("Campaigns")
+                        .HasForeignKey("VaccineId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Vaccine");
+                });
+
+            modelBuilder.Entity("BOs.Models.VaccinationConsent", b =>
+                {
+                    b.HasOne("BOs.Models.VaccinationCampaign", "Campaign")
+                        .WithMany("Consents")
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BOs.Models.Account", "Parent")
+                        .WithMany()
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BOs.Models.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Campaign");
+
+                    b.Navigation("Parent");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("BOs.Models.VaccinationFollowUp", b =>
+                {
+                    b.HasOne("BOs.Models.VaccinationRecord", "Record")
+                        .WithMany()
+                        .HasForeignKey("RecordId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Record");
+                });
+
+            modelBuilder.Entity("BOs.Models.VaccinationRecord", b =>
+                {
+                    b.HasOne("BOs.Models.VaccinationCampaign", "Campaign")
+                        .WithMany("Records")
+                        .HasForeignKey("CampaignId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BOs.Models.Account", "Nurse")
+                        .WithMany()
+                        .HasForeignKey("NurseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BOs.Models.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Campaign");
+
+                    b.Navigation("Nurse");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("MedicalEventMedicalSupply", b =>
+                {
+                    b.HasOne("BOs.Models.MedicalEvent", null)
+                        .WithMany()
+                        .HasForeignKey("MedicalEventsMedicalEventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BOs.Models.MedicalSupply", null)
+                        .WithMany()
+                        .HasForeignKey("MedicalSuppliesMedicalSupplyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("MedicalEventMedication", b =>
+                {
+                    b.HasOne("BOs.Models.MedicalEvent", null)
+                        .WithMany()
+                        .HasForeignKey("MedicalEventsMedicalEventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BOs.Models.Medication", null)
+                        .WithMany()
+                        .HasForeignKey("MedicationsMedicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("BOs.Models.Account", b =>
                 {
                     b.Navigation("PasswordResetTokens");
@@ -552,14 +1004,26 @@ namespace BOs.Migrations
                     b.Navigation("Students");
                 });
 
-            modelBuilder.Entity("BOs.Models.Medication", b =>
+            modelBuilder.Entity("BOs.Models.ParentMedicationRequest", b =>
                 {
-                    b.Navigation("MedicalEvents");
+                    b.Navigation("Medications");
                 });
 
             modelBuilder.Entity("BOs.Models.Role", b =>
                 {
                     b.Navigation("Accounts");
+                });
+
+            modelBuilder.Entity("BOs.Models.VaccinationCampaign", b =>
+                {
+                    b.Navigation("Consents");
+
+                    b.Navigation("Records");
+                });
+
+            modelBuilder.Entity("BOs.Models.Vaccine", b =>
+                {
+                    b.Navigation("Campaigns");
                 });
 #pragma warning restore 612, 618
         }

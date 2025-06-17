@@ -68,5 +68,26 @@ namespace SWP391_BE.Controllers
 
             return Ok(studentInfo);
         }
+
+        [HttpGet("MyChildren")]
+        [Authorize(Roles = "Parent")]
+        public async Task<IActionResult> GetMyChildren()
+        {
+            var accountIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (accountIdClaim == null || !int.TryParse(accountIdClaim.Value, out int parentId))
+                return Unauthorized(new { message = "Invalid or missing token." });
+
+            var students = await _studentService.GetStudentsByParentIdAsync(parentId);
+            var result = students.Select(s => new
+            {
+                s.StudentId,
+                s.Fullname,
+                s.StudentCode,
+                s.Gender,
+                s.DateOfBirth,
+                ClassName = s.Class?.ClassName ?? "Unknown"
+            });
+            return Ok(result);
+        }
     }
 }

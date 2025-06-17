@@ -16,5 +16,8 @@ namespace Repos
         Task<bool> DeleteStudentAsync(int id);
         Task<Student?> GetStudentByCodeAsync(string studentCode);
         Task<bool> AssignParentToStudentAsync(string studentCode, int parentId);
+        Task<List<Student>> GetStudentsByParentIdAsync(int parentId);
+        Task<List<Student>> GetStudentsByClassIdAsync(int classId);
+        Task<List<Student>> GetStudentsByClassIdsAsync(List<int> classIds);
     }
 }

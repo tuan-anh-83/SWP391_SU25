@@ -14,6 +14,7 @@ namespace BOs.Models
         public string Password { get; set; }
         public string Fullname { get; set; }
         public string Address { get; set; }
+        public byte[]? Image { get; set; } // Thêm dòng này để lưu ảnh đại diện (avatar)
 
         public DateTime DateOfBirth { get; set; }
         public string PhoneNumber { get; set; }

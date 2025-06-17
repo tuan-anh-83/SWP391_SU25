@@ -112,6 +112,8 @@ namespace BOs.Data
                 entity.Property(a => a.UpdateAt).IsRequired();
                 entity.Property(a => a.Status).IsRequired();
 
+                entity.Property(a => a.Image).HasColumnType("varbinary(max)"); // Lưu file nhị phân
+
                 entity.HasMany(a => a.Students)
                       .WithOne(s => s.Parent)
                       .HasForeignKey(s => s.ParentId)

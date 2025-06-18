@@ -1,4 +1,4 @@
-using BOs.Data;
+﻿using BOs.Data;
 using BOs.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -61,6 +61,25 @@ namespace DAOs
             req.NurseNote = nurseNote;
             _context.Update(req);
             return await _context.SaveChangesAsync() > 0;
+        }
+
+        // Thêm API update cho Parent (chỉ khi Pending)
+        public async Task<bool> UpdateAsync(ParentMedicationRequest request)
+        {
+            _context.Update(request);
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        // Lấy lịch sử gửi thuốc của Parent
+        public async Task<List<ParentMedicationRequest>> GetByParentIdAsync(int parentId)
+        {
+            return await _context.Set<ParentMedicationRequest>()
+                .Include(r => r.Parent)
+                .Include(r => r.Student)
+                .Include(r => r.Medications)
+                .Where(r => r.ParentId == parentId)
+                .OrderByDescending(r => r.DateCreated)
+                .ToListAsync();
         }
     }
 }

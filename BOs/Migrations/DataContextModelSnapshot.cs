@@ -166,6 +166,46 @@ namespace BOs.Migrations
                     b.ToTable("Class", (string)null);
                 });
 
+            modelBuilder.Entity("BOs.Models.HealthCheck", b =>
+                {
+                    b.Property<int>("HealthCheckID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HealthCheckID"));
+
+                    b.Property<bool?>("ConfirmByParent")
+                        .IsRequired()
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("NurseID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ParentID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Result")
+                        .HasMaxLength(500)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("StudentID")
+                        .HasColumnType("int");
+
+                    b.HasKey("HealthCheckID");
+
+                    b.HasIndex("NurseID");
+
+                    b.HasIndex("ParentID");
+
+                    b.HasIndex("StudentID");
+
+                    b.ToTable("HealthCheck", (string)null);
+                });
+
             modelBuilder.Entity("BOs.Models.HealthRecord", b =>
                 {
                     b.Property<int>("HealthRecordId")
@@ -782,6 +822,33 @@ namespace BOs.Migrations
                     b.Navigation("Account");
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("BOs.Models.HealthCheck", b =>
+                {
+                    b.HasOne("BOs.Models.Account", "Nurse")
+                        .WithMany()
+                        .HasForeignKey("NurseID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BOs.Models.Account", "Parent")
+                        .WithMany()
+                        .HasForeignKey("ParentID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BOs.Models.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Nurse");
+
+                    b.Navigation("Parent");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("BOs.Models.HealthRecord", b =>

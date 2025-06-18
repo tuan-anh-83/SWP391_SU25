@@ -44,6 +44,7 @@ namespace DAOs
             blog.Title = blog.Title.Trim();
             blog.Description = blog.Description?.Trim();
             blog.Content = blog.Content.Trim();
+            
 
             // Không gọi Trim với byte[]
             // blog.Image giữ nguyên

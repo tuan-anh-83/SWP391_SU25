@@ -141,10 +141,6 @@ namespace DAOs
                 .Include(e => e.Nurse)
                 .Include(e => e.Medications)
                 .Include(e => e.MedicalSupplies)
-                .Include(e => e.Date)
-                .Include(e => e.Description)
-                .Include(e => e.Note)
-                .Include(e => e.Type)
                 .Where(e => studentIds.Contains(e.StudentId))
                 .ToListAsync();
 

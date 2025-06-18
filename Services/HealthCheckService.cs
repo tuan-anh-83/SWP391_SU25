@@ -32,10 +32,6 @@ namespace Services
             try
             {
                 var healthCheck = await _healthCheckRepo.GetHealthCheckByIdAsync(id);
-                if (healthCheck == null)
-                {
-                    throw new Exception($"Health check with ID {id} not found");
-                }
                 return healthCheck;
             }
             catch (Exception ex)
@@ -89,15 +85,11 @@ namespace Services
                     throw new ArgumentNullException(nameof(healthCheck));
                 }
 
-                // Validate required fields
-                if (healthCheck.StudentID <= 0)
-                    throw new ArgumentException("Student ID is required");
-                if (healthCheck.NurseID <= 0)
-                    throw new ArgumentException("Nurse ID is required");
-                if (healthCheck.ParentID <= 0)
-                    throw new ArgumentException("Parent ID is required");
-                if (string.IsNullOrEmpty(healthCheck.Result))
-                    throw new ArgumentException("Result is required");
+                // Basic data integrity validation
+                if (healthCheck.StudentID == null || healthCheck.NurseID == null || healthCheck.ParentID <= 0)
+                {
+                    throw new ArgumentException("Invalid health check data: StudentID, NurseID, and ParentID are required");
+                }
 
                 healthCheck.Date = DateTime.Now;
                 healthCheck.ConfirmByParent = null; // Initially null until parent confirms/declines
@@ -114,10 +106,7 @@ namespace Services
         {
             try
             {
-                if (healthCheck == null)
-                {
-                    throw new ArgumentNullException(nameof(healthCheck));
-                }
+              
 
                 var existingHealthCheck = await _healthCheckRepo.GetHealthCheckByIdAsync(healthCheck.HealthCheckID);
                 if (existingHealthCheck == null)
@@ -138,10 +127,6 @@ namespace Services
             try
             {
                 var healthCheck = await _healthCheckRepo.GetHealthCheckByIdAsync(id);
-                if (healthCheck == null)
-                {
-                    throw new Exception($"Health check with ID {id} not found");
-                }
 
                 return await _healthCheckRepo.DeleteHealthCheckAsync(id);
             }
@@ -156,11 +141,6 @@ namespace Services
             try
             {
                 var healthCheck = await _healthCheckRepo.GetHealthCheckByIdAsync(healthCheckId);
-                if (healthCheck == null)
-                {
-                    throw new Exception($"Health check with ID {healthCheckId} not found");
-                }
-
                 return await _healthCheckRepo.ConfirmHealthCheckAsync(healthCheckId);
             }
             catch (Exception ex)
@@ -174,11 +154,6 @@ namespace Services
             try
             {
                 var healthCheck = await _healthCheckRepo.GetHealthCheckByIdAsync(healthCheckId);
-                if (healthCheck == null)
-                {
-                    throw new Exception($"Health check with ID {healthCheckId} not found");
-                }
-
                 return await _healthCheckRepo.DeclineHealthCheckAsync(healthCheckId);
             }
             catch (Exception ex)

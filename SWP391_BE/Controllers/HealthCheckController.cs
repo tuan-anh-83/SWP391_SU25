@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services;
 using SWP391_BE.DTO;
@@ -20,6 +21,7 @@ namespace SWP391_BE.Controllers
 
         // GET: api/HealthCheck
         [HttpGet]
+        [Authorize(Roles = "Nurse,Admin")]
         public async Task<ActionResult<IEnumerable<HealthCheckListResponseDTO>>> GetAllHealthChecks()
         {
             try
@@ -45,6 +47,7 @@ namespace SWP391_BE.Controllers
 
         // GET: api/HealthCheck/5
         [HttpGet("{id}")]
+        [Authorize(Roles = "Nurse, Admin, Parent")]
         public async Task<ActionResult<HealthCheckResponseDTO>> GetHealthCheck(int id)
         {
             try
@@ -59,11 +62,8 @@ namespace SWP391_BE.Controllers
                 {
                     HealthCheckID = healthCheck.HealthCheckID,
                     StudentID = healthCheck.StudentID,
-                    StudentName = healthCheck.Student?.Fullname,
                     NurseID = healthCheck.NurseID,
-                    NurseName = healthCheck.Nurse?.Fullname,
                     ParentID = healthCheck.ParentID,
-                    ParentName = healthCheck.Parent?.Fullname,
                     Result = healthCheck.Result,
                     Date = healthCheck.Date,
                     ConfirmByParent = healthCheck.ConfirmByParent
@@ -78,6 +78,7 @@ namespace SWP391_BE.Controllers
         }
 
         // GET: api/HealthCheck/student/5
+        [Authorize(Roles = "Nurse, Admin, Parent")]
         [HttpGet("student/{studentId}")]
         public async Task<ActionResult<IEnumerable<HealthCheckListResponseDTO>>> GetHealthChecksByStudent(int studentId)
         {
@@ -104,6 +105,7 @@ namespace SWP391_BE.Controllers
 
         // GET: api/HealthCheck/nurse/5
         [HttpGet("nurse/{nurseId}")]
+        [Authorize(Roles = "Nurse, Admin, Parent")]
         public async Task<ActionResult<IEnumerable<HealthCheckListResponseDTO>>> GetHealthChecksByNurse(int nurseId)
         {
             try
@@ -129,6 +131,7 @@ namespace SWP391_BE.Controllers
 
         // GET: api/HealthCheck/parent/5
         [HttpGet("parent/{parentId}")]
+        [Authorize(Roles = "Nurse, Admin, Parent")]
         public async Task<ActionResult<IEnumerable<HealthCheckListResponseDTO>>> GetHealthChecksByParent(int parentId)
         {
             try
@@ -154,16 +157,29 @@ namespace SWP391_BE.Controllers
 
         // POST: api/HealthCheck
         [HttpPost]
+        [Authorize(Roles = "Nurse, Admin")]
         public async Task<ActionResult<HealthCheckResponseDTO>> CreateHealthCheck(CreateHealthCheckRequestDTO request)
         {
             try
             {
+                // Validate required fields
+                if (request.StudentID <= 0)
+                    return BadRequest("Student ID is required and must be greater than 0");
+                if (request.NurseID <= 0)
+                    return BadRequest("Nurse ID is required and must be greater than 0");
+                if (request.ParentID <= 0)
+                    return BadRequest("Parent ID is required and must be greater than 0");
+                if (request.Result != null && request.Result.Length > 500)
+                    return BadRequest("Result must not exceed 500 characters");
+
                 var healthCheck = new BOs.Models.HealthCheck
                 {
                     StudentID = request.StudentID,
                     NurseID = request.NurseID,
                     ParentID = request.ParentID,
-                    Result = request.Result
+                    Result = request.Result,
+                    Date = DateTime.Now,
+                    ConfirmByParent = null
                 };
 
                 var createdHealthCheck = await _healthCheckService.CreateHealthCheckAsync(healthCheck);
@@ -171,17 +187,18 @@ namespace SWP391_BE.Controllers
                 {
                     HealthCheckID = createdHealthCheck.HealthCheckID,
                     StudentID = createdHealthCheck.StudentID,
-                    StudentName = createdHealthCheck.Student?.Fullname,
                     NurseID = createdHealthCheck.NurseID,
-                    NurseName = createdHealthCheck.Nurse?.Fullname,
                     ParentID = createdHealthCheck.ParentID,
-                    ParentName = createdHealthCheck.Parent?.Fullname,
                     Result = createdHealthCheck.Result,
                     Date = createdHealthCheck.Date,
                     ConfirmByParent = createdHealthCheck.ConfirmByParent
                 };
 
                 return CreatedAtAction(nameof(GetHealthCheck), new { id = response.HealthCheckID }, response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
@@ -191,6 +208,7 @@ namespace SWP391_BE.Controllers
 
         // PUT: api/HealthCheck/5
         [HttpPut("{id}")]
+        [Authorize(Roles = "Nurse, Admin")]
         public async Task<IActionResult> UpdateHealthCheck(int id, UpdateHealthCheckRequestDTO request)
         {
             try
@@ -209,7 +227,7 @@ namespace SWP391_BE.Controllers
                 existingHealthCheck.Result = request.Result;
                 await _healthCheckService.UpdateHealthCheckAsync(existingHealthCheck);
 
-                return NoContent();
+                return Ok(existingHealthCheck);
             }
             catch (Exception ex)
             {
@@ -219,6 +237,7 @@ namespace SWP391_BE.Controllers
 
         // DELETE: api/HealthCheck/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Nurse, Admin")]
         public async Task<IActionResult> DeleteHealthCheck(int id)
         {
             try
@@ -229,7 +248,7 @@ namespace SWP391_BE.Controllers
                     return NotFound($"Health check with ID {id} not found");
                 }
 
-                return NoContent();
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -239,6 +258,7 @@ namespace SWP391_BE.Controllers
 
         // PATCH: api/HealthCheck/5/confirm
         [HttpPatch("{id}/confirm")]
+        [Authorize(Roles = "Parent")]
         public async Task<IActionResult> ConfirmHealthCheck(int id, HealthCheckConfirmationRequestDTO request)
         {
             try
@@ -254,7 +274,7 @@ namespace SWP391_BE.Controllers
                     return NotFound($"Health check with ID {id} not found");
                 }
 
-                return NoContent();
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -264,6 +284,7 @@ namespace SWP391_BE.Controllers
 
         // PATCH: api/HealthCheck/5/decline
         [HttpPatch("{id}/decline")]
+        [Authorize(Roles = "Parent")]
         public async Task<IActionResult> DeclineHealthCheck(int id, HealthCheckConfirmationRequestDTO request)
         {
             try
@@ -279,7 +300,7 @@ namespace SWP391_BE.Controllers
                     return NotFound($"Health check with ID {id} not found");
                 }
 
-                return NoContent();
+                return Ok(result);
             }
             catch (Exception ex)
             {

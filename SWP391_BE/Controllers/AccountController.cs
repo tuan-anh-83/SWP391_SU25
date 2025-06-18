@@ -66,7 +66,7 @@ namespace SWP391_BE.Controllers
                 Address = accountRequest.Address,
                 PhoneNumber = accountRequest.PhoneNumber,
                 DateOfBirth = (DateTime)accountRequest.DateOfBirth,
-                RoleID = 3,
+                RoleID = 1,
                 Status = "Active",
                 CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone),
                 UpdateAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone)

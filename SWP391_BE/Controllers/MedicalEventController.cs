@@ -182,7 +182,37 @@ namespace SWP391_BE.Controllers
                 return NotFound("No medical events found.");
             }
 
-            return Ok(events);
+            // Ánh xạ sang DTO
+            var eventDtos = events.Select(e => new MedicalEventDto
+            {
+                MedicalEventId = e.MedicalEventId,
+                StudentId = e.StudentId,
+                StudentName = e.Student?.Fullname,
+                NurseId = e.NurseId,
+                NurseName = e.Nurse?.Fullname,
+                Type = e.Type,
+                Description = e.Description,
+                Note = e.Note,
+                Date = e.Date,
+                Medications = e.Medications?.Select(m => new MedicationDto
+                {
+                    MedicationId = m.MedicationId,
+                    Name = m.Name,
+                    Type = m.Type,
+                    Usage = m.Usage,
+                    ExpiredDate = m.ExpiredDate
+                }).ToList(),
+                MedicalSupplies = e.MedicalSupplies?.Select(s => new MedicalSupplyDto
+                {
+                    MedicalSupplyId = s.MedicalSupplyId,
+                    Name = s.Name,
+                    Type = s.Type,
+                    Description = s.Description,
+                    ExpiredDate = s.ExpiredDate
+                }).ToList()
+            }).ToList();
+
+            return Ok(eventDtos);
         }
     }
 }

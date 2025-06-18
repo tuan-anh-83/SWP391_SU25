@@ -9,9 +9,23 @@ namespace Services
     {
         private readonly IParentMedicationRequestRepo _repo;
         public ParentMedicationRequestService(IParentMedicationRequestRepo repo) { _repo = repo; }
-        public Task<bool> CreateAsync(ParentMedicationRequest request) => _repo.CreateAsync(request);
-        public Task<List<ParentMedicationRequest>> GetAllAsync() => _repo.GetAllAsync();
-        public Task<ParentMedicationRequest?> GetByIdAsync(int id) => _repo.GetByIdAsync(id);
-        public Task<bool> ApproveAsync(int id, string status, string nurseNote) => _repo.ApproveAsync(id, status, nurseNote);
+
+        public Task<bool> CreateAsync(ParentMedicationRequest request) 
+            => _repo.CreateAsync(request);
+
+        public Task<List<ParentMedicationRequest>> GetAllAsync() 
+            => _repo.GetAllAsync();
+
+        public Task<ParentMedicationRequest?> GetByIdAsync(int id) 
+            => _repo.GetByIdAsync(id);
+
+        public Task<bool> ApproveAsync(int id, string status, string nurseNote) 
+            => _repo.ApproveAsync(id, status, nurseNote);
+
+        public Task<bool> UpdateAsync(ParentMedicationRequest request)
+            => _repo.UpdateAsync(request);
+
+        public Task<List<ParentMedicationRequest>> GetByParentIdAsync(int parentId)
+            => _repo.GetByParentIdAsync(parentId);
     }
 }

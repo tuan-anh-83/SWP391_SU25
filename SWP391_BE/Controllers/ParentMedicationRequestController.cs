@@ -49,7 +49,7 @@ public class ParentMedicationRequestController : ControllerBase
         {
             ParentId = parentId,
             StudentId = dto.StudentId,
-            ParentNote = dto.ParentNote, // Có thể null
+            ParentNote = dto.ParentNote,
             DateCreated = DateTime.UtcNow,
             Status = "Pending",
             Medications = dto.Medications?.Select(m => new ParentMedicationDetail
@@ -67,7 +67,110 @@ public class ParentMedicationRequestController : ControllerBase
         if (!created)
             return BadRequest(new { message = "Failed to send medication request." });
 
-        return Ok(new { message = "Medication request sent successfully." });
+        // Trả về cả RequestId cho parent
+        return Ok(new { requestId = request.RequestId, message = "Medication request sent successfully." });
+    }
+
+    [HttpGet("GetById/{requestId}")]
+    [Authorize(Roles = "Parent")]
+    public async Task<IActionResult> GetById(int requestId)
+    {
+        var accountIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (accountIdClaim == null || !int.TryParse(accountIdClaim.Value, out int parentId))
+            return Unauthorized(new { message = "Invalid or missing token." });
+
+        var request = await _service.GetByIdAsync(requestId);
+        if (request == null || request.ParentId != parentId)
+            return NotFound(new { message = "Request not found." });
+
+        return Ok(new
+        {
+            request.RequestId,
+            request.ParentId,
+            ParentName = request.Parent?.Fullname,
+            request.StudentId,
+            StudentName = request.Student?.Fullname,
+            request.ParentNote,
+            request.NurseNote,
+            request.DateCreated,
+            request.Status,
+            Medications = request.Medications.Select(m => new
+            {
+                m.MedicationDetailId,
+                m.Name,
+                m.Type,
+                m.Usage,
+                m.Dosage,
+                m.ExpiredDate,
+                m.Note
+            }).ToList()
+        });
+    }
+
+    [HttpPut("UpdateRequest/{requestId}")]
+    [Authorize(Roles = "Parent")]
+    public async Task<IActionResult> UpdateRequest(int requestId, [FromBody] ParentMedicationRequestUpdateDTO dto)
+    {
+        var accountIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (accountIdClaim == null || !int.TryParse(accountIdClaim.Value, out int parentId))
+            return Unauthorized(new { message = "Invalid or missing token." });
+
+        var request = await _service.GetByIdAsync(requestId);
+        if (request == null || request.ParentId != parentId)
+            return NotFound(new { message = "Request not found." });
+
+        if (request.Status != "Pending")
+            return BadRequest(new { message = "Only pending requests can be updated." });
+
+        request.ParentNote = dto.ParentNote;
+        request.Medications = dto.Medications?.Select(m => new ParentMedicationDetail
+        {
+            Name = m.Name,
+            Type = m.Type,
+            Usage = m.Usage,
+            Dosage = m.Dosage,
+            ExpiredDate = m.ExpiredDate,
+            Note = m.Note
+        }).ToList();
+
+        var updated = await _service.UpdateAsync(request);
+        if (!updated)
+            return BadRequest(new { message = "Failed to update request." });
+
+        return Ok(new { message = "Request updated successfully." });
+    }
+
+    [HttpGet("History")]
+    [Authorize(Roles = "Parent")]
+    public async Task<IActionResult> GetHistory()
+    {
+        var accountIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (accountIdClaim == null || !int.TryParse(accountIdClaim.Value, out int parentId))
+            return Unauthorized(new { message = "Invalid or missing token." });
+
+        var requests = await _service.GetByParentIdAsync(parentId);
+        var result = requests.Select(r => new
+        {
+            r.RequestId,
+            r.StudentId,
+            StudentName = r.Student?.Fullname,
+            r.ParentNote,
+            r.NurseNote,
+            r.DateCreated,
+            r.Status,
+            Medications = r.Medications.Select(m => new
+            {
+                m.MedicationDetailId,
+                m.Name,
+                m.Type,
+                m.Usage,
+                m.Dosage,
+                m.ExpiredDate,
+                m.Note
+            }).ToList()
+        });
+
+        return Ok(result);
     }
 
     [HttpPut("ApproveRequest/{requestId}")]
@@ -77,7 +180,7 @@ public class ParentMedicationRequestController : ControllerBase
         if (dto.Status != "Approved" && dto.Status != "Rejected")
             return BadRequest(new { message = "Status must be 'Approved' or 'Rejected'." });
 
-        var result = await _service.ApproveAsync(requestId, dto.Status, dto.NurseNote); // Có thể null
+        var result = await _service.ApproveAsync(requestId, dto.Status, dto.NurseNote); 
         if (!result)
             return BadRequest(new { message = "Failed to update request status." });
 

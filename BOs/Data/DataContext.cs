@@ -39,6 +39,7 @@ namespace BOs.Data
         public DbSet<VaccinationConsent> VaccinationConsents { get; set; }
         public DbSet<VaccinationRecord> VaccinationRecords { get; set; }
         public DbSet<VaccinationFollowUp> VaccinationFollowUps { get; set; }
+        public DbSet<HealthCheck> HealthChecks { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer(GetConnectionString());
@@ -522,6 +523,37 @@ namespace BOs.Data
                       .WithMany()
                       .HasForeignKey(f => f.RecordId)
                       .OnDelete(DeleteBehavior.Cascade);
+            });
+            #endregion
+
+            #region HealthCheck
+            modelBuilder.Entity<HealthCheck>(entity =>
+            {
+                entity.ToTable("HealthCheck");
+
+                entity.HasKey(h => h.HealthCheckID);
+
+                entity.Property(h => h.Result)
+                      .HasMaxLength(500)
+                      .IsUnicode(true);
+
+                entity.Property(h => h.Date).IsRequired();
+                entity.Property(h => h.ConfirmByParent);
+
+                entity.HasOne(h => h.Student)
+                      .WithMany()
+                      .HasForeignKey(h => h.StudentID)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(h => h.Nurse)
+                      .WithMany()
+                      .HasForeignKey(h => h.NurseID)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(h => h.Parent)
+                      .WithMany()
+                      .HasForeignKey(h => h.ParentID)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
             #endregion
 

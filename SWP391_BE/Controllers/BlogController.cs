@@ -4,6 +4,7 @@
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Mvc;
     using Services;
+    using SWP391_BE.DTO;
     using System.ComponentModel.DataAnnotations;
     using System.Security.Claims;
 
@@ -67,7 +68,7 @@
 
         [HttpPost("CreateBlog")]
         [Authorize(Roles = "Nurse,Admin")]
-        public async Task<IActionResult> CreateBlog([FromForm] BlogCreateModel model)
+        public async Task<IActionResult> CreateBlog([FromForm] BlogCreateModelDTO model)
         {
             var accountIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (accountIdClaim == null || !int.TryParse(accountIdClaim.Value, out int accountId))
@@ -106,7 +107,7 @@
 
         [HttpPut("UpdateBlog/{id}")]
         [Authorize(Roles = "Nurse,Admin")]
-        public async Task<IActionResult> UpdateBlog(int id, [FromForm] BlogUpdateModel model)
+        public async Task<IActionResult> UpdateBlog(int id, [FromForm] BlogUpdateModelDTO model)
         {
             var blog = await _blogService.GetBlogByIdAsync(id);
             if (blog == null) return NotFound(new { message = "Blog not found." });
@@ -164,31 +165,4 @@
             return Ok(new { message = "Blog deleted successfully." });
         }
     }
-
-
-    public class BlogCreateModel
-    {
-        [Required]
-        public string Title { get; set; }
-
-        public string? Description { get; set; }
-
-        [Required]
-        public string Content { get; set; }
-
-        public IFormFile? Image { get; set; }
-
-        [Required]
-        public int CategoryID { get; set; }
-    }
-
-    public class BlogUpdateModel
-    {
-        public string? Title { get; set; }
-        public string? Description { get; set; }
-        public string? Content { get; set; }
-        public IFormFile? Image { get; set; }
-        public int? CategoryID { get; set; }
-    }
-
 }

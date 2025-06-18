@@ -171,5 +171,18 @@ namespace SWP391_BE.Controllers
 
             return Ok(new { message = "Medical event deleted successfully." });
         }
+        [HttpGet("GetMedicalEventByParent/{parentId}")]
+        [Authorize(Roles = "Nurse,Admin,Parent")]
+        public async Task<IActionResult> GetMedicalEventsByParentId(int parentId)
+        {
+            var events = await _medicalEventService.GetMedicalEventsByParentIdAsync(parentId);
+
+            if (events == null || events.Count == 0)
+            {
+                return NotFound("No medical events found.");
+            }
+
+            return Ok(events);
+        }
     }
 }

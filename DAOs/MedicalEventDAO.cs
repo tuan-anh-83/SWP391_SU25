@@ -126,5 +126,26 @@ namespace DAOs
             _context.MedicalEvents.Remove(medicalEvent);
             return await _context.SaveChangesAsync() > 0;
         }
+
+        public async Task<List<MedicalEvent>> GetMedicalEventsByParentIdAsync(int parentId)
+        {
+            // Lấy tất cả StudentId có ParentId tương ứng
+            var studentIds = await _context.Students
+                .Where(s => s.ParentId == parentId)
+                .Select(s => s.StudentId)
+                .ToListAsync();
+
+            // Truy vấn tất cả MedicalEvent có StudentId nằm trong danh sách trên
+            var medicalEvents = await _context.MedicalEvents
+                .Include(e => e.Student)
+                .Include(e => e.Nurse)
+                .Include(e => e.Medications)
+                .Include(e => e.MedicalSupplies)
+                .Where(e => studentIds.Contains(e.StudentId))
+                .ToListAsync();
+
+            return medicalEvents;
+        }
+
     }
 }

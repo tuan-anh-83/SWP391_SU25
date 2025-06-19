@@ -24,7 +24,19 @@ namespace Services
 
         public async Task<bool> LinkStudentToParentAsync(string studentCode, int parentId)
         {
-            return await _studentRepo.AssignParentToStudentAsync(studentCode, parentId);
+            var linked = await _studentRepo.AssignParentToStudentAsync(studentCode, parentId);
+            if (linked)
+            {
+                // Get the student to retrieve their ID
+                var student = await _studentRepo.GetStudentByCodeAsync(studentCode);
+                if (student != null)
+                {
+                    // Update all future health checks to include the new parent
+                    var healthCheckService = new HealthCheckService();
+                    await healthCheckService.UpdateParentForFutureHealthChecksAsync(student.StudentId, parentId);
+                }
+            }
+            return linked;
         }
 
         public async Task<Student> CreateStudentAsync(Student student)

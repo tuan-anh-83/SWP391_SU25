@@ -15,5 +15,6 @@ namespace Services
         Task<HealthCheck?> UpdateHealthCheckAsync(HealthCheck healthCheck);
         Task<bool> DeleteHealthCheckAsync(int id);
         Task<List<HealthCheck>> GetHealthChecksByDateAsync(DateTime date);
+        Task<int> UpdateParentForFutureHealthChecksAsync(int studentId, int parentId);
     }
 }

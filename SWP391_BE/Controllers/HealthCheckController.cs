@@ -123,19 +123,18 @@ namespace SWP391_BE.Controllers
             var createdChecks = new List<HealthCheckResponseDTO>();
             foreach (var student in students)
             {
-                if (student?.ParentId != null)
-                {
+              
                     var healthCheck = new HealthCheck
                     {
                         NurseID = dto.NurseId,
                         StudentID = student.StudentId,
-                        ParentID = student.ParentId.Value,
+                        ParentID = student.ParentId,
                         Date = dto.Date,
                         HealthCheckDescription = dto.HealthCheckDescription,
                     };
                     var created = await _service.CreateHealthCheckAsync(healthCheck);
                     createdChecks.Add(new HealthCheckResponseDTO(created));
-                }
+                
             }
             return Ok(new { message = "Batch health checks created and parents notified.", data = createdChecks });
         }

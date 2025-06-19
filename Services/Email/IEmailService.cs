@@ -13,5 +13,6 @@ namespace Services.Email
         Task SendOtpReminderEmailAsync(string email);
         Task SendStreamKeyEmailAsync(string email, string rtmpUrl, DateTime startTime, DateTime endTime, string schoolName);
         Task SendStatusUserAsync(string email, string status);
+        Task SendCustomEmailAsync(string email, string subject, string body);
     }
 }

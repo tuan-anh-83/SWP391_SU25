@@ -8,157 +8,69 @@ namespace Services
 {
     public class HealthCheckService : IHealthCheckService
     {
-        private readonly IHealthCheckRepo _healthCheckRepo;
+        private readonly IHealthCheckRepo _repo;
 
-        public HealthCheckService(IHealthCheckRepo healthCheckRepo)
+        public HealthCheckService()
         {
-            _healthCheckRepo = healthCheckRepo;
-        }
-
-        public async Task<List<HealthCheck>> GetAllHealthChecksAsync()
-        {
-            try
-            {
-                return await _healthCheckRepo.GetAllHealthChecksAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error retrieving health checks", ex);
-            }
-        }
-
-        public async Task<HealthCheck> GetHealthCheckByIdAsync(int id)
-        {
-            try
-            {
-                var healthCheck = await _healthCheckRepo.GetHealthCheckByIdAsync(id);
-                return healthCheck;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error retrieving health check with ID {id}", ex);
-            }
-        }
-
-        public async Task<List<HealthCheck>> GetHealthChecksByStudentIdAsync(int studentId)
-        {
-            try
-            {
-                return await _healthCheckRepo.GetHealthChecksByStudentIdAsync(studentId);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error retrieving health checks for student {studentId}", ex);
-            }
-        }
-
-        public async Task<List<HealthCheck>> GetHealthChecksByNurseIdAsync(int nurseId)
-        {
-            try
-            {
-                return await _healthCheckRepo.GetHealthChecksByNurseIdAsync(nurseId);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error retrieving health checks for nurse {nurseId}", ex);
-            }
-        }
-
-        public async Task<List<HealthCheck>> GetHealthChecksByParentIdAsync(int parentId)
-        {
-            try
-            {
-                return await _healthCheckRepo.GetHealthChecksByParentIdAsync(parentId);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error retrieving health checks for parent {parentId}", ex);
-            }
+            _repo = new HealthCheckRepo();
         }
 
         public async Task<HealthCheck> CreateHealthCheckAsync(HealthCheck healthCheck)
         {
-            try
-            {
-                if (healthCheck == null)
-                {
-                    throw new ArgumentNullException(nameof(healthCheck));
-                }
-
-                // Basic data integrity validation
-                if (healthCheck.StudentID == null || healthCheck.NurseID == null || healthCheck.ParentID <= 0)
-                {
-                    throw new ArgumentException("Invalid health check data: StudentID, NurseID, and ParentID are required");
-                }
-
-                healthCheck.Date = DateTime.Now;
-                healthCheck.ConfirmByParent = null; // Initially null until parent confirms/declines
-
-                return await _healthCheckRepo.CreateHealthCheckAsync(healthCheck);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error creating health check", ex);
-            }
+            CalculateBmiAndNutritionStatus(healthCheck);
+            return await _repo.CreateHealthCheckAsync(healthCheck);
         }
 
-        public async Task<HealthCheck> UpdateHealthCheckAsync(HealthCheck healthCheck)
+        public async Task<HealthCheck?> GetHealthCheckByIdAsync(int id)
+            => await _repo.GetHealthCheckByIdAsync(id);
+
+        public async Task<List<HealthCheck>> GetHealthChecksByStudentIdAsync(int studentId)
+            => await _repo.GetHealthChecksByStudentIdAsync(studentId);
+
+        public async Task<List<HealthCheck>> GetHealthChecksByParentIdAsync(int parentId)
+            => await _repo.GetHealthChecksByParentIdAsync(parentId);
+
+        public async Task<List<HealthCheck>> GetHealthChecksByNurseIdAsync(int nurseId)
+            => await _repo.GetHealthChecksByNurseIdAsync(nurseId);
+
+        public async Task<List<HealthCheck>> GetAllHealthChecksAsync()
+            => await _repo.GetAllHealthChecksAsync();
+
+        public async Task<HealthCheck?> UpdateHealthCheckAsync(HealthCheck healthCheck)
         {
-            try
-            {
-              
-
-                var existingHealthCheck = await _healthCheckRepo.GetHealthCheckByIdAsync(healthCheck.HealthCheckID);
-                if (existingHealthCheck == null)
-                {
-                    throw new Exception($"Health check with ID {healthCheck.HealthCheckID} not found");
-                }
-
-                return await _healthCheckRepo.UpdateHealthCheckAsync(healthCheck);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error updating health check with ID {healthCheck?.HealthCheckID}", ex);
-            }
+            CalculateBmiAndNutritionStatus(healthCheck);
+            return await _repo.UpdateHealthCheckAsync(healthCheck);
         }
 
         public async Task<bool> DeleteHealthCheckAsync(int id)
-        {
-            try
-            {
-                var healthCheck = await _healthCheckRepo.GetHealthCheckByIdAsync(id);
+            => await _repo.DeleteHealthCheckAsync(id);
 
-                return await _healthCheckRepo.DeleteHealthCheckAsync(id);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error deleting health check with ID {id}", ex);
-            }
-        }
+        public async Task<List<HealthCheck>> GetHealthChecksByDateAsync(DateTime date)
+            => await _repo.GetHealthChecksByDateAsync(date);
 
-        public async Task<bool> ConfirmHealthCheckAsync(int healthCheckId)
+        private void CalculateBmiAndNutritionStatus(HealthCheck healthCheck)
         {
-            try
+            if (healthCheck.Height.HasValue && healthCheck.Weight.HasValue && healthCheck.Height.Value > 0)
             {
-                var healthCheck = await _healthCheckRepo.GetHealthCheckByIdAsync(healthCheckId);
-                return await _healthCheckRepo.ConfirmHealthCheckAsync(healthCheckId);
+                // Height is expected in meters
+                double calHeight=healthCheck.Height.Value/100;
+                double bmi = healthCheck.Weight.Value / (calHeight * calHeight);
+                healthCheck.BMI = Math.Round(bmi, 2);
+                if (bmi < 18.5)
+                    healthCheck.NutritionStatus = "Underweight";
+                else if (bmi < 25)
+                    healthCheck.NutritionStatus = "Normal";
+                else if (bmi < 30)
+                    healthCheck.NutritionStatus = "Overweight";
+                else if (bmi < 40)
+                    healthCheck.NutritionStatus = "Obese";
+                else
+                    healthCheck.NutritionStatus = "ExtremlyObese";
             }
-            catch (Exception ex)
+            else
             {
-                throw new Exception($"Error confirming health check with ID {healthCheckId}", ex);
-            }
-        }
-
-        public async Task<bool> DeclineHealthCheckAsync(int healthCheckId)
-        {
-            try
-            {
-                var healthCheck = await _healthCheckRepo.GetHealthCheckByIdAsync(healthCheckId);
-                return await _healthCheckRepo.DeclineHealthCheckAsync(healthCheckId);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error declining health check with ID {healthCheckId}", ex);
+                healthCheck.BMI = null;
+                healthCheck.NutritionStatus = null;
             }
         }
     }

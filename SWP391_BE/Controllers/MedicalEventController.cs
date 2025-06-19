@@ -171,48 +171,36 @@ namespace SWP391_BE.Controllers
 
             return Ok(new { message = "Medical event deleted successfully." });
         }
-        [HttpGet("GetMedicalEventByParent/{parentId}")]
-        [Authorize(Roles = "Nurse,Admin,Parent")]
-        public async Task<IActionResult> GetMedicalEventsByParentId(int parentId)
+
+        [HttpGet("Parent/MedicalEvents")]
+        [Authorize(Roles = "Parent")]
+        public async Task<IActionResult> GetMedicalEventsForParent()
         {
-            var events = await _medicalEventService.GetMedicalEventsByParentIdAsync(parentId);
+            var accountIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (accountIdClaim == null || !int.TryParse(accountIdClaim.Value, out int parentId))
+                return Unauthorized(new { message = "Invalid or missing token." });
 
-            if (events == null || events.Count == 0)
-            {
-                return NotFound("No medical events found.");
-            }
+            var data = await _medicalEventService.GetMedicalEventsByParentIdAsync(parentId);
 
-            // Ánh xạ sang DTO
-            var eventDtos = events.Select(e => new MedicalEventDto
+            var result = data.Select(d => new
             {
-                MedicalEventId = e.MedicalEventId,
-                StudentId = e.StudentId,
-                StudentName = e.Student?.Fullname,
-                NurseId = e.NurseId,
-                NurseName = e.Nurse?.Fullname,
-                Type = e.Type,
-                Description = e.Description,
-                Note = e.Note,
-                Date = e.Date,
-                Medications = e.Medications?.Select(m => new MedicationDto
+                StudentId = d.student.StudentId,
+                StudentName = d.student.Fullname,
+                Events = d.events.Select(me => new
                 {
-                    MedicationId = m.MedicationId,
-                    Name = m.Name,
-                    Type = m.Type,
-                    Usage = m.Usage,
-                    ExpiredDate = m.ExpiredDate
+                    me.MedicalEventId,
+                    me.Type,
+                    me.Description,
+                    me.Note,
+                    me.Date,
+                    NurseName = me.Nurse?.Fullname,
+                    MedicationNames = me.Medications?.Select(m => m.Name).ToList(),
+                    MedicalSupplyNames = me.MedicalSupplies?.Select(s => s.Name).ToList()
                 }).ToList(),
-                MedicalSupplies = e.MedicalSupplies?.Select(s => new MedicalSupplyDto
-                {
-                    MedicalSupplyId = s.MedicalSupplyId,
-                    Name = s.Name,
-                    Type = s.Type,
-                    Description = s.Description,
-                    ExpiredDate = s.ExpiredDate
-                }).ToList()
-            }).ToList();
+                Message = d.events.Any() ? null : "Hiện chưa có sự kiện y tế"
+            });
 
-            return Ok(eventDtos);
+            return Ok(result);
         }
     }
 }

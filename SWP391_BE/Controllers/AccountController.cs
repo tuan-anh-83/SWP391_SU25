@@ -379,7 +379,8 @@ namespace SWP391_BE.Controllers
                     account.Fullname,
                     account.Address,
                     account.PhoneNumber,
-                    // Trả về danh sách tất cả các con
+                    // Trả về image dạng base64 string (giống Blog)
+                    Image = account.Image != null ? Convert.ToBase64String(account.Image) : null,
                     Students = account.Students?.Select(ap => new
                     {
                         ap.StudentId,
@@ -452,11 +453,7 @@ namespace SWP391_BE.Controllers
                 return StatusCode(500, "A problem occurred while processing your request.");
             }
 
-            // Trả về link ảnh đại diện (nếu có)
-            string? avatarUrl = account.Image != null
-                ? $"{Request.Scheme}://{Request.Host}/api/accounts/avatar/{account.AccountID}"
-                : null;
-
+            // Trả về thông tin account mới nhất, bao gồm ảnh base64
             return Ok(new
             {
                 message = "Account updated successfully.",
@@ -467,7 +464,7 @@ namespace SWP391_BE.Controllers
                     account.Fullname,
                     account.Address,
                     account.PhoneNumber,
-                    AvatarUrl = avatarUrl
+                    Image = account.Image != null ? Convert.ToBase64String(account.Image) : null
                 }
             });
         }

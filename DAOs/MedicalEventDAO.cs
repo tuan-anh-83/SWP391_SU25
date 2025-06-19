@@ -127,25 +127,26 @@ namespace DAOs
             return await _context.SaveChangesAsync() > 0;
         }
 
-        public async Task<List<MedicalEvent>> GetMedicalEventsByParentIdAsync(int parentId)
+        public async Task<List<(Student student, List<MedicalEvent> events)>> GetMedicalEventsByParentIdAsync(int parentId)
         {
-            // Lấy tất cả StudentId có ParentId tương ứng
-            var studentIds = await _context.Students
+            var students = await _context.Students
                 .Where(s => s.ParentId == parentId)
-                .Select(s => s.StudentId)
+                .Include(s => s.Parent)
                 .ToListAsync();
 
-            // Truy vấn tất cả MedicalEvent có StudentId nằm trong danh sách trên
-            var medicalEvents = await _context.MedicalEvents
-                .Include(e => e.Student)
-                .Include(e => e.Nurse)
-                .Include(e => e.Medications)
-                .Include(e => e.MedicalSupplies)
-                .Where(e => studentIds.Contains(e.StudentId))
-                .ToListAsync();
-
-            return medicalEvents;
+            var result = new List<(Student, List<MedicalEvent>)>();
+            foreach (var student in students)
+            {
+                var events = await _context.MedicalEvents
+                    .Where(me => me.StudentId == student.StudentId)
+                    .Include(me => me.Nurse)
+                    .Include(me => me.Medications)
+                    .Include(me => me.MedicalSupplies)
+                    .AsNoTracking()
+                    .ToListAsync();
+                result.Add((student, events));
+            }
+            return result;
         }
-
     }
 }

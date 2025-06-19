@@ -14,7 +14,7 @@ namespace Repos
         public Task<bool> UpdateMedicalEventAsync(MedicalEvent medicalEvent, List<int>? medicationIds, List<int>? medicalSupplyIds)
             => MedicalEventDAO.Instance.UpdateMedicalEventAsync(medicalEvent, medicationIds, medicalSupplyIds);
         public Task<bool> DeleteMedicalEventAsync(int eventId) => MedicalEventDAO.Instance.DeleteMedicalEventAsync(eventId);
-        public Task<List<MedicalEvent>> GetMedicalEventsByParentIdAsync(int parentId) 
+        public Task<List<(Student student, List<MedicalEvent> events)>> GetMedicalEventsByParentIdAsync(int parentId)
             => MedicalEventDAO.Instance.GetMedicalEventsByParentIdAsync(parentId);
     }
 }

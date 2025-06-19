@@ -17,6 +17,7 @@ namespace SWP391_BE.DTO
         public double? Weight { get; set; }
         public double? BMI { get; set; }
         public string? NutritionStatus { get; set; }
+        public string? HealthCheckDescription { get; set; }
 
         public HealthCheckResponseDTO(HealthCheck hc)
         {
@@ -30,6 +31,7 @@ namespace SWP391_BE.DTO
             Weight = hc.Weight;
             BMI = hc.BMI;
             NutritionStatus = hc.NutritionStatus;
+            HealthCheckDescription = hc.HealthCheckDescription;
         }
     }
 } 

@@ -18,6 +18,7 @@ namespace BOs.Models
         public double? Weight { get; set; }
         public double? BMI { get; set; }
         public string? NutritionStatus { get; set; }
+        public string? HealthCheckDescription { get; set; }
 
         public Student Student { get; set; }
         public Account Parent { get; set; }

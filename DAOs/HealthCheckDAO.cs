@@ -97,6 +97,7 @@ namespace DAOs
             existing.StudentID = healthCheck.StudentID;
             existing.NurseID = healthCheck.NurseID;
             existing.ParentID = healthCheck.ParentID;
+            existing.HealthCheckDescription = healthCheck.HealthCheckDescription;
 
             await _context.SaveChangesAsync();
             return existing;

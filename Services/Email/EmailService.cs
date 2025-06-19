@@ -288,5 +288,30 @@ namespace Services.Email
 
             return (subject, body);
         }
+
+        public async Task SendCustomEmailAsync(string email, string subject, string body)
+        {
+            string smtpServer = _configuration["EmailSettings:SmtpServer"];
+            int smtpPort = int.Parse(_configuration["EmailSettings:Port"]);
+            string senderEmail = _configuration["EmailSettings:SenderEmail"];
+            string senderPassword = _configuration["EmailSettings:SenderPassword"];
+
+            var smtpClient = new SmtpClient(smtpServer)
+            {
+                Port = smtpPort,
+                Credentials = new NetworkCredential(senderEmail, senderPassword),
+                EnableSsl = true,
+            };
+
+            var mailMessage = new MailMessage
+            {
+                From = new MailAddress(senderEmail),
+                Subject = subject,
+                Body = body,
+                IsBodyHtml = true
+            };
+            mailMessage.To.Add(email);
+            await smtpClient.SendMailAsync(mailMessage);
+        }
     }
 }

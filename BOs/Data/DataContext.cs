@@ -542,6 +542,7 @@ namespace BOs.Data
                 entity.Property(h => h.Height);
                 entity.Property(h => h.BMI);
                 entity.Property(h => h.NutritionStatus);
+                entity.Property(h => h.HealthCheckDescription);
 
                 entity.HasOne(h => h.Student)
                       .WithMany()

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System;
 using Microsoft.AspNetCore.Authorization;
+using Services.Email;
 
 namespace SWP391_BE.Controllers
 {
@@ -15,10 +16,14 @@ namespace SWP391_BE.Controllers
     public class HealthCheckController : ControllerBase
     {
         private readonly IHealthCheckService _service;
+        private readonly IStudentService _studentService;
+        private readonly IEmailService _emailService;
 
-        public HealthCheckController()
+        public HealthCheckController(IHealthCheckService service, IStudentService studentService, IEmailService emailService)
         {
-            _service = new HealthCheckService();
+            _service = service;
+            _studentService = studentService;
+            _emailService = emailService;
         }
 
         [HttpPost]
@@ -30,7 +35,8 @@ namespace SWP391_BE.Controllers
                 NurseID = dto.NurseId,
                 StudentID = dto.StudentId,
                 ParentID = dto.ParentId,
-                Date = System.DateTime.UtcNow
+                Date = System.DateTime.UtcNow,
+                HealthCheckDescription = dto.HealthCheckDescription
             };
             var result = await _service.CreateHealthCheckAsync(model);
             return Ok(new HealthCheckResponseDTO(result));
@@ -106,6 +112,51 @@ namespace SWP391_BE.Controllers
         {
             var result = await _service.DeleteHealthCheckAsync(id);
             if (!result) return NotFound();
+            return Ok(result);
+        }
+
+        [HttpPost("CreateHealthCheckList")]
+      
+        public async Task<IActionResult> CreateHealthCheckList([FromBody] HealthCheckBatchCreateDTO dto)
+        {
+            var students = await _studentService.GetStudentsByClassIdsAsync(dto.ClassIds);
+            var createdChecks = new List<HealthCheckResponseDTO>();
+            foreach (var student in students)
+            {
+                if (student?.ParentId != null)
+                {
+                    var healthCheck = new HealthCheck
+                    {
+                        NurseID = dto.NurseId,
+                        StudentID = student.StudentId,
+                        ParentID = student.ParentId.Value,
+                        Date = dto.Date,
+                        HealthCheckDescription = dto.HealthCheckDescription,
+                    };
+                    var created = await _service.CreateHealthCheckAsync(healthCheck);
+                    createdChecks.Add(new HealthCheckResponseDTO(created));
+                }
+            }
+            return Ok(new { message = "Batch health checks created and parents notified.", data = createdChecks });
+        }
+
+        [HttpGet("ParentNotifications")]
+        [Authorize(Roles = "Parent")]
+        public async Task<IActionResult> GetParentNotifications()
+        {
+            var accountIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (accountIdClaim == null || !int.TryParse(accountIdClaim.Value, out int parentId))
+                return Unauthorized(new { message = "Invalid or missing token." });
+
+            var healthChecks = await _service.GetHealthChecksByParentIdAsync(parentId);
+            var result = healthChecks.Select(hc => new
+            {
+                hc.HealthCheckID,
+                hc.StudentID,
+                StudentName = hc.Student?.Fullname,
+                hc.Date,
+                hc.HealthCheckDescription
+            });
             return Ok(result);
         }
     }

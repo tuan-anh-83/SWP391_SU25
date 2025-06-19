@@ -11,8 +11,6 @@ namespace Repos
         Task<bool> CreateMedicalEventAsync(MedicalEvent medicalEvent, List<int>? medicationIds, List<int>? medicalSupplyIds);
         Task<bool> UpdateMedicalEventAsync(MedicalEvent medicalEvent, List<int>? medicationIds, List<int>? medicalSupplyIds);
         Task<bool> DeleteMedicalEventAsync(int eventId);
-        Task<List<MedicalEvent>> GetMedicalEventsByParentIdAsync(int parentId);
-
-
+        Task<List<(Student student, List<MedicalEvent> events)>> GetMedicalEventsByParentIdAsync(int parentId);
     }
 }

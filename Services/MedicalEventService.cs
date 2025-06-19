@@ -1,4 +1,4 @@
-    using BOs.Models;
+using BOs.Models;
 using Repos;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -21,7 +21,7 @@ namespace Services
         public Task<bool> UpdateMedicalEventAsync(MedicalEvent medicalEvent, List<int>? medicationIds, List<int>? medicalSupplyIds)
             => _repo.UpdateMedicalEventAsync(medicalEvent, medicationIds, medicalSupplyIds);
         public Task<bool> DeleteMedicalEventAsync(int eventId) => _repo.DeleteMedicalEventAsync(eventId);
-        public Task<List<MedicalEvent>> GetMedicalEventsByParentIdAsync(int parentId) 
+        public Task<List<(Student student, List<MedicalEvent> events)>> GetMedicalEventsByParentIdAsync(int parentId)
             => _repo.GetMedicalEventsByParentIdAsync(parentId);
     }
 }

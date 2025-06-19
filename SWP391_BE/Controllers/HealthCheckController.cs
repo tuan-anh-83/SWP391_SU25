@@ -1,311 +1,112 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using BOs.Models;
 using Services;
 using SWP391_BE.DTO;
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using System;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SWP391_BE.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class HealthCheckController : ControllerBase
     {
-        private readonly IHealthCheckService _healthCheckService;
+        private readonly IHealthCheckService _service;
 
-        public HealthCheckController(IHealthCheckService healthCheckService)
+        public HealthCheckController()
         {
-            _healthCheckService = healthCheckService;
+            _service = new HealthCheckService();
         }
 
-        // GET: api/HealthCheck
+        [HttpPost]
+        [Authorize(Roles = "Nurse,Admin")]
+        public async Task<ActionResult<HealthCheckResponseDTO>> Create([FromBody] CreateHealthCheckDTO dto)
+        {
+            var model = new HealthCheck
+            {
+                NurseID = dto.NurseId,
+                StudentID = dto.StudentId,
+                ParentID = dto.ParentId,
+                Date = System.DateTime.UtcNow
+            };
+            var result = await _service.CreateHealthCheckAsync(model);
+            return Ok(new HealthCheckResponseDTO(result));
+        }
+
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Nurse,Admin")]
+        public async Task<ActionResult> Update(int id, [FromBody] UpdateHealthCheckDTO dto)
+        {
+            var existing = await _service.GetHealthCheckByIdAsync(id);
+            if (existing == null) return NotFound();
+            existing.Result = dto.Result;
+            existing.Height = dto.Height;
+            existing.Weight = dto.Weight;
+            var result = await _service.UpdateHealthCheckAsync(existing);
+            if (result == null) return NotFound();
+            return Ok(new HealthCheckResponseDTO(result));
+        }
+
+        [HttpGet("{id}")]
+        [Authorize(Roles = "Nurse,Admin")]
+        public async Task<ActionResult<HealthCheckResponseDTO>> GetById(int id)
+        {
+            var result = await _service.GetHealthCheckByIdAsync(id);
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+
+        [HttpGet("student/{studentId}")]
+        [Authorize]
+        public async Task<ActionResult<List<HealthCheckResponseDTO>>> GetByStudent(int studentId)
+        {
+            var list = await _service.GetHealthChecksByStudentIdAsync(studentId);
+            return Ok(list.Select(hc => new HealthCheckResponseDTO(hc)).ToList());
+        }
+
+        [HttpGet("parent/{parentId}")]
+        [Authorize]
+        public async Task<ActionResult<List<HealthCheckResponseDTO>>> GetByParent(int parentId)
+        {
+            var list = await _service.GetHealthChecksByParentIdAsync(parentId);
+            return Ok(list.Select(hc => new HealthCheckResponseDTO(hc)).ToList());
+        }
+
+        [HttpGet("nurse/{nurseId}")]
+        [Authorize(Roles = "Nurse,Admin")]
+        public async Task<ActionResult<List<HealthCheckResponseDTO>>> GetByNurse(int nurseId)
+        {
+            var list = await _service.GetHealthChecksByNurseIdAsync(nurseId);
+            return Ok(list.Select(hc => new HealthCheckResponseDTO(hc)).ToList());
+        }
+
         [HttpGet]
         [Authorize(Roles = "Nurse,Admin")]
-        public async Task<ActionResult<IEnumerable<HealthCheckListResponseDTO>>> GetAllHealthChecks()
+        public async Task<ActionResult<List<HealthCheckResponseDTO>>> GetAll()
         {
-            try
-            {
-                var healthChecks = await _healthCheckService.GetAllHealthChecksAsync();
-                var response = healthChecks.Select(h => new HealthCheckListResponseDTO
-                {
-                    HealthCheckID = h.HealthCheckID,
-                    StudentName = h.Student?.Fullname,
-                    NurseName = h.Nurse?.Fullname,
-                    Result = h.Result,
-                    Date = h.Date,
-                    ConfirmByParent = h.ConfirmByParent
-                }).ToList();
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            var list = await _service.GetAllHealthChecksAsync();
+            return Ok(list.Select(hc => new HealthCheckResponseDTO(hc)).ToList());
         }
 
-        // GET: api/HealthCheck/5
-        [HttpGet("{id}")]
-        [Authorize(Roles = "Nurse, Admin, Parent")]
-        public async Task<ActionResult<HealthCheckResponseDTO>> GetHealthCheck(int id)
+        [HttpGet("date/{date}")]
+        [Authorize(Roles = "Nurse,Admin")]
+        public async Task<ActionResult<List<HealthCheckResponseDTO>>> GetByDate(string date)
         {
-            try
-            {
-                var healthCheck = await _healthCheckService.GetHealthCheckByIdAsync(id);
-                if (healthCheck == null)
-                {
-                    return NotFound($"Health check with ID {id} not found");
-                }
-
-                var response = new HealthCheckResponseDTO
-                {
-                    HealthCheckID = healthCheck.HealthCheckID,
-                    StudentID = healthCheck.StudentID,
-                    NurseID = healthCheck.NurseID,
-                    ParentID = healthCheck.ParentID,
-                    Result = healthCheck.Result,
-                    Date = healthCheck.Date,
-                    ConfirmByParent = healthCheck.ConfirmByParent
-                };
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            if (!DateTime.TryParse(date, out var parsedDate))
+                return BadRequest("Invalid date format. Use yyyy-MM-dd.");
+            var list = await _service.GetHealthChecksByDateAsync(parsedDate);
+            return Ok(list.Select(hc => new HealthCheckResponseDTO(hc)).ToList());
         }
-
-        // GET: api/HealthCheck/student/5
-        [Authorize(Roles = "Nurse, Admin, Parent")]
-        [HttpGet("student/{studentId}")]
-        public async Task<ActionResult<IEnumerable<HealthCheckListResponseDTO>>> GetHealthChecksByStudent(int studentId)
-        {
-            try
-            {
-                var healthChecks = await _healthCheckService.GetHealthChecksByStudentIdAsync(studentId);
-                var response = healthChecks.Select(h => new HealthCheckListResponseDTO
-                {
-                    HealthCheckID = h.HealthCheckID,
-                    StudentName = h.Student?.Fullname,
-                    NurseName = h.Nurse?.Fullname,
-                    Result = h.Result,
-                    Date = h.Date,
-                    ConfirmByParent = h.ConfirmByParent
-                }).ToList();
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
-        // GET: api/HealthCheck/nurse/5
-        [HttpGet("nurse/{nurseId}")]
-        [Authorize(Roles = "Nurse, Admin, Parent")]
-        public async Task<ActionResult<IEnumerable<HealthCheckListResponseDTO>>> GetHealthChecksByNurse(int nurseId)
-        {
-            try
-            {
-                var healthChecks = await _healthCheckService.GetHealthChecksByNurseIdAsync(nurseId);
-                var response = healthChecks.Select(h => new HealthCheckListResponseDTO
-                {
-                    HealthCheckID = h.HealthCheckID,
-                    StudentName = h.Student?.Fullname,
-                    NurseName = h.Nurse?.Fullname,
-                    Result = h.Result,
-                    Date = h.Date,
-                    ConfirmByParent = h.ConfirmByParent
-                }).ToList();
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
-        // GET: api/HealthCheck/parent/5
-        [HttpGet("parent/{parentId}")]
-        [Authorize(Roles = "Nurse, Admin, Parent")]
-        public async Task<ActionResult<IEnumerable<HealthCheckListResponseDTO>>> GetHealthChecksByParent(int parentId)
-        {
-            try
-            {
-                var healthChecks = await _healthCheckService.GetHealthChecksByParentIdAsync(parentId);
-                var response = healthChecks.Select(h => new HealthCheckListResponseDTO
-                {
-                    HealthCheckID = h.HealthCheckID,
-                    StudentName = h.Student?.Fullname,
-                    NurseName = h.Nurse?.Fullname,
-                    Result = h.Result,
-                    Date = h.Date,
-                    ConfirmByParent = h.ConfirmByParent
-                }).ToList();
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
-        // POST: api/HealthCheck
-        [HttpPost]
-        [Authorize(Roles = "Nurse, Admin")]
-        public async Task<ActionResult<HealthCheckResponseDTO>> CreateHealthCheck(CreateHealthCheckRequestDTO request)
-        {
-            try
-            {
-                // Validate required fields
-                if (request.StudentID <= 0)
-                    return BadRequest("Student ID is required and must be greater than 0");
-                if (request.NurseID <= 0)
-                    return BadRequest("Nurse ID is required and must be greater than 0");
-                if (request.ParentID <= 0)
-                    return BadRequest("Parent ID is required and must be greater than 0");
-                if (request.Result != null && request.Result.Length > 500)
-                    return BadRequest("Result must not exceed 500 characters");
-
-                var healthCheck = new BOs.Models.HealthCheck
-                {
-                    StudentID = request.StudentID,
-                    NurseID = request.NurseID,
-                    ParentID = request.ParentID,
-                    Result = request.Result,
-                    Date = DateTime.Now,
-                    ConfirmByParent = null
-                };
-
-                var createdHealthCheck = await _healthCheckService.CreateHealthCheckAsync(healthCheck);
-                var response = new HealthCheckResponseDTO
-                {
-                    HealthCheckID = createdHealthCheck.HealthCheckID,
-                    StudentID = createdHealthCheck.StudentID,
-                    NurseID = createdHealthCheck.NurseID,
-                    ParentID = createdHealthCheck.ParentID,
-                    Result = createdHealthCheck.Result,
-                    Date = createdHealthCheck.Date,
-                    ConfirmByParent = createdHealthCheck.ConfirmByParent
-                };
-
-                return CreatedAtAction(nameof(GetHealthCheck), new { id = response.HealthCheckID }, response);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
-        // PUT: api/HealthCheck/5
-        [HttpPut("{id}")]
-        [Authorize(Roles = "Nurse, Admin")]
-        public async Task<IActionResult> UpdateHealthCheck(int id, UpdateHealthCheckRequestDTO request)
-        {
-            try
-            {
-                if (id != request.HealthCheckID)
-                {
-                    return BadRequest("ID mismatch");
-                }
-
-                var existingHealthCheck = await _healthCheckService.GetHealthCheckByIdAsync(id);
-                if (existingHealthCheck == null)
-                {
-                    return NotFound($"Health check with ID {id} not found");
-                }
-
-                existingHealthCheck.Result = request.Result;
-                await _healthCheckService.UpdateHealthCheckAsync(existingHealthCheck);
-
-                return Ok(existingHealthCheck);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
-        // DELETE: api/HealthCheck/5
+        [Authorize(Roles = "Nurse,Admin")]
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Nurse, Admin")]
-        public async Task<IActionResult> DeleteHealthCheck(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            try
-            {
-                var result = await _healthCheckService.DeleteHealthCheckAsync(id);
-                if (!result)
-                {
-                    return NotFound($"Health check with ID {id} not found");
-                }
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
-        // PATCH: api/HealthCheck/5/confirm
-        [HttpPatch("{id}/confirm")]
-        [Authorize(Roles = "Parent")]
-        public async Task<IActionResult> ConfirmHealthCheck(int id, HealthCheckConfirmationRequestDTO request)
-        {
-            try
-            {
-                if (id != request.HealthCheckID)
-                {
-                    return BadRequest("ID mismatch");
-                }
-
-                var result = await _healthCheckService.ConfirmHealthCheckAsync(id);
-                if (!result)
-                {
-                    return NotFound($"Health check with ID {id} not found");
-                }
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
-        // PATCH: api/HealthCheck/5/decline
-        [HttpPatch("{id}/decline")]
-        [Authorize(Roles = "Parent")]
-        public async Task<IActionResult> DeclineHealthCheck(int id, HealthCheckConfirmationRequestDTO request)
-        {
-            try
-            {
-                if (id != request.HealthCheckID)
-                {
-                    return BadRequest("ID mismatch");
-                }
-
-                var result = await _healthCheckService.DeclineHealthCheckAsync(id);
-                if (!result)
-                {
-                    return NotFound($"Health check with ID {id} not found");
-                }
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            var result = await _service.DeleteHealthCheckAsync(id);
+            if (!result) return NotFound();
+            return Ok(result);
         }
     }
-} 
+}

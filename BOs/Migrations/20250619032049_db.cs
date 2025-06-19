@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BOs.Migrations
 {
     /// <inheritdoc />
-    public partial class db17625 : Migration
+    public partial class db : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -231,6 +231,45 @@ namespace BOs.Migrations
                         principalTable: "Class",
                         principalColumn: "ClassId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "HealthCheck",
+                columns: table => new
+                {
+                    HealthCheckID = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    StudentID = table.Column<int>(type: "int", nullable: false),
+                    NurseID = table.Column<int>(type: "int", nullable: false),
+                    ParentID = table.Column<int>(type: "int", nullable: false),
+                    Result = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Height = table.Column<double>(type: "float", nullable: true),
+                    Weight = table.Column<double>(type: "float", nullable: true),
+                    BMI = table.Column<double>(type: "float", nullable: true),
+                    NutritionStatus = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_HealthCheck", x => x.HealthCheckID);
+                    table.ForeignKey(
+                        name: "FK_HealthCheck_Account_NurseID",
+                        column: x => x.NurseID,
+                        principalTable: "Account",
+                        principalColumn: "AccountID",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_HealthCheck_Account_ParentID",
+                        column: x => x.ParentID,
+                        principalTable: "Account",
+                        principalColumn: "AccountID",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_HealthCheck_Student_StudentID",
+                        column: x => x.StudentID,
+                        principalTable: "Student",
+                        principalColumn: "StudentId",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -522,6 +561,21 @@ namespace BOs.Migrations
                 column: "CategoryID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_HealthCheck_NurseID",
+                table: "HealthCheck",
+                column: "NurseID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HealthCheck_ParentID",
+                table: "HealthCheck",
+                column: "ParentID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HealthCheck_StudentID",
+                table: "HealthCheck",
+                column: "StudentID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_HealthRecord_ParentId_StudentId",
                 table: "HealthRecord",
                 columns: new[] { "ParentId", "StudentId" },
@@ -634,6 +688,9 @@ namespace BOs.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Blog");
+
+            migrationBuilder.DropTable(
+                name: "HealthCheck");
 
             migrationBuilder.DropTable(
                 name: "HealthRecord");

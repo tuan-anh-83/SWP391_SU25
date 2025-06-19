@@ -174,15 +174,20 @@ namespace BOs.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HealthCheckID"));
 
-                    b.Property<bool?>("ConfirmByParent")
-                        .IsRequired()
-                        .HasColumnType("bit");
+                    b.Property<double?>("BMI")
+                        .HasColumnType("float");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
+                    b.Property<double?>("Height")
+                        .HasColumnType("float");
+
                     b.Property<int>("NurseID")
                         .HasColumnType("int");
+
+                    b.Property<string>("NutritionStatus")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ParentID")
                         .HasColumnType("int");
@@ -194,6 +199,9 @@ namespace BOs.Migrations
 
                     b.Property<int>("StudentID")
                         .HasColumnType("int");
+
+                    b.Property<double?>("Weight")
+                        .HasColumnType("float");
 
                     b.HasKey("HealthCheckID");
 

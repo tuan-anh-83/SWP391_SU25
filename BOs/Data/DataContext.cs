@@ -538,7 +538,10 @@ namespace BOs.Data
                       .IsUnicode(true);
 
                 entity.Property(h => h.Date).IsRequired();
-                entity.Property(h => h.ConfirmByParent);
+                entity.Property(h => h.Weight);
+                entity.Property(h => h.Height);
+                entity.Property(h => h.BMI);
+                entity.Property(h => h.NutritionStatus);
 
                 entity.HasOne(h => h.Student)
                       .WithMany()

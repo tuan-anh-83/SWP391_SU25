@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BOs.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250617133725_db17625")]
-    partial class db17625
+    [Migration("20250619032049_db")]
+    partial class db
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -167,6 +167,54 @@ namespace BOs.Migrations
                     b.HasKey("ClassId");
 
                     b.ToTable("Class", (string)null);
+                });
+
+            modelBuilder.Entity("BOs.Models.HealthCheck", b =>
+                {
+                    b.Property<int>("HealthCheckID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HealthCheckID"));
+
+                    b.Property<double?>("BMI")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double?>("Height")
+                        .HasColumnType("float");
+
+                    b.Property<int>("NurseID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NutritionStatus")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ParentID")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Result")
+                        .HasMaxLength(500)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("StudentID")
+                        .HasColumnType("int");
+
+                    b.Property<double?>("Weight")
+                        .HasColumnType("float");
+
+                    b.HasKey("HealthCheckID");
+
+                    b.HasIndex("NurseID");
+
+                    b.HasIndex("ParentID");
+
+                    b.HasIndex("StudentID");
+
+                    b.ToTable("HealthCheck", (string)null);
                 });
 
             modelBuilder.Entity("BOs.Models.HealthRecord", b =>
@@ -785,6 +833,33 @@ namespace BOs.Migrations
                     b.Navigation("Account");
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("BOs.Models.HealthCheck", b =>
+                {
+                    b.HasOne("BOs.Models.Account", "Nurse")
+                        .WithMany()
+                        .HasForeignKey("NurseID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BOs.Models.Account", "Parent")
+                        .WithMany()
+                        .HasForeignKey("ParentID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BOs.Models.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentID")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Nurse");
+
+                    b.Navigation("Parent");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("BOs.Models.HealthRecord", b =>

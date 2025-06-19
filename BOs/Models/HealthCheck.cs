@@ -11,7 +11,7 @@ namespace BOs.Models
         public int HealthCheckID { get; set; }
         public int StudentID { get; set; }
         public int NurseID { get; set; }
-        public int ParentID { get; set; }
+        public int? ParentID { get; set; }
         public string? Result { get; set; }
         public DateTime Date { get; set; }
         public double? Height { get; set; }

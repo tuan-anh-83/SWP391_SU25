@@ -48,6 +48,9 @@ namespace Services
         public async Task<List<HealthCheck>> GetHealthChecksByDateAsync(DateTime date)
             => await _repo.GetHealthChecksByDateAsync(date);
 
+        public async Task<int> UpdateParentForFutureHealthChecksAsync(int studentId, int parentId)
+            => await _repo.UpdateParentForFutureHealthChecksAsync(studentId, parentId);
+
         private void CalculateBmiAndNutritionStatus(HealthCheck healthCheck)
         {
             if (healthCheck.Height.HasValue && healthCheck.Weight.HasValue && healthCheck.Height.Value > 0)

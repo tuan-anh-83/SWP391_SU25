@@ -33,5 +33,8 @@ namespace Repos
 
         public async Task<List<HealthCheck>> GetHealthChecksByDateAsync(DateTime date)
             => await HealthCheckDAO.Instance.GetHealthChecksByDateAsync(date);
+
+        public async Task<int> UpdateParentForFutureHealthChecksAsync(int studentId, int parentId)
+            => await HealthCheckDAO.Instance.UpdateParentForFutureHealthChecksAsync(studentId, parentId);
     }
 }

@@ -121,5 +121,18 @@ namespace DAOs
                 .Include(h => h.Nurse)
                 .ToListAsync();
         }
+
+        public async Task<int> UpdateParentForFutureHealthChecksAsync(int studentId, int parentId)
+        {
+            var tomorrow = DateTime.UtcNow.Date.AddDays(1);
+            var futureChecks = await _context.HealthChecks
+                .Where(h => h.StudentID == studentId && h.Date >= tomorrow && h.ParentID == null)
+                .ToListAsync();
+            foreach (var hc in futureChecks)
+            {
+                hc.ParentID = parentId;
+            }
+            return await _context.SaveChangesAsync();
+        }
     }
 }

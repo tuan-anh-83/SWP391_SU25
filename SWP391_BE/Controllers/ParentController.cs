@@ -11,10 +11,12 @@ namespace SWP391_BE.Controllers
     public class ParentController : ControllerBase
     {
         private readonly IStudentService _studentService;
+        private readonly IHealthCheckService _healthCheckService;
 
-        public ParentController(IStudentService studentService)
+        public ParentController(IStudentService studentService, IHealthCheckService healthCheckService)
         {
             _studentService = studentService;
+            _healthCheckService = healthCheckService;
         }
 
         [HttpPost("add-student")]
@@ -37,7 +39,11 @@ namespace SWP391_BE.Controllers
 
             var success = await _studentService.LinkStudentToParentAsync(request.StudentCode, parentId);
             if (success)
+            {
+                // Update all future health checks to include the new parent
+                await _healthCheckService.UpdateParentForFutureHealthChecksAsync(student.StudentId, parentId);
                 return Ok("Student successfully linked to parent.");
+            }
 
             return StatusCode(500, "Failed to link student to parent.");
         }

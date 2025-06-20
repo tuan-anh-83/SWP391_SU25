@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace BOs.Models
@@ -10,6 +10,9 @@ namespace BOs.Models
         public string? Type { get; set; }
         public string? Description { get; set; }
         public DateTime? ExpiredDate { get; set; }
-        public ICollection<MedicalEvent> MedicalEvents { get; set; }
+        public int Quantity { get; set; }
+
+        // Navigation for many-to-many with payload
+        public ICollection<MedicalEventMedicalSupply> MedicalEventMedicalSupplies { get; set; }
     }
 }

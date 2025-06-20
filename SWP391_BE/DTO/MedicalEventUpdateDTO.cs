@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SWP391_BE.DTO;
+using System;
 using System.Collections.Generic;
 
 public class MedicalEventUpdateDTO
@@ -7,6 +8,6 @@ public class MedicalEventUpdateDTO
     public string? Description { get; set; }
     public string? Note { get; set; }
     public DateTime? Date { get; set; }
-    public List<int>? MedicationIds { get; set; } // Có thể null
-    public List<int>? MedicalSupplyIds { get; set; } // Có thể null
+    public List<MedicalEventMedicationDTO>? Medications { get; set; }
+    public List<MedicalEventSupplyDTO>? MedicalSupplies { get; set; }
 }

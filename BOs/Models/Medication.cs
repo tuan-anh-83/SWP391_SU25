@@ -1,4 +1,4 @@
-namespace BOs.Models
+﻿namespace BOs.Models
 {
     public class Medication
     {
@@ -7,6 +7,9 @@ namespace BOs.Models
         public string Type { get; set; }
         public string Usage { get; set; }
         public DateTime ExpiredDate { get; set; }
-        public ICollection<MedicalEvent> MedicalEvents { get; set; }
+        public int Quantity { get; set; }
+
+        // Navigation for many-to-many with payload
+        public ICollection<MedicalEventMedication> MedicalEventMedications { get; set; }
     }
 }

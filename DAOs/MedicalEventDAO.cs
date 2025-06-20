@@ -34,8 +34,8 @@ namespace DAOs
             return await _context.MedicalEvents
                 .Include(me => me.Student)
                 .Include(me => me.Nurse)
-                .Include(me => me.Medications)
-                .Include(me => me.MedicalSupplies)
+                .Include(me => me.MedicalEventMedications).ThenInclude(mem => mem.Medication)
+                .Include(me => me.MedicalEventMedicalSupplies).ThenInclude(mes => mes.MedicalSupply)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -45,52 +45,58 @@ namespace DAOs
             return await _context.MedicalEvents
                 .Include(me => me.Student)
                 .Include(me => me.Nurse)
-                .Include(me => me.Medications)
-                .Include(me => me.MedicalSupplies)
+                .Include(me => me.MedicalEventMedications).ThenInclude(mem => mem.Medication)
+                .Include(me => me.MedicalEventMedicalSupplies).ThenInclude(mes => mes.MedicalSupply)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(me => me.MedicalEventId == eventId);
         }
 
-        public async Task<bool> CreateMedicalEventAsync(MedicalEvent medicalEvent, List<int>? medicationIds, List<int>? medicalSupplyIds)
+        public async Task<bool> CreateMedicalEventAsync(
+            MedicalEvent medicalEvent,
+            List<MedicalEventMedication> medicationUsages,
+            List<MedicalEventMedicalSupply> supplyUsages)
         {
-            // Kiểm tra StudentId, NurseId
             var studentExists = await _context.Students.AnyAsync(s => s.StudentId == medicalEvent.StudentId);
             var nurseExists = await _context.Accounts.AnyAsync(a => a.AccountID == medicalEvent.NurseId);
             if (!studentExists || !nurseExists)
                 return false;
 
-            // Gán danh sách thuốc
-            if (medicationIds != null && medicationIds.Count > 0)
-            {
-                var medications = await _context.Medications.Where(m => medicationIds.Contains(m.MedicationId)).ToListAsync();
-                medicalEvent.Medications = medications;
-            }
-            else
-            {
-                medicalEvent.Medications = new List<Medication>();
-            }
-
-            // Gán danh sách thiết bị y tế
-            if (medicalSupplyIds != null && medicalSupplyIds.Count > 0)
-            {
-                var supplies = await _context.MedicalSupplies.Where(s => medicalSupplyIds.Contains(s.MedicalSupplyId)).ToListAsync();
-                medicalEvent.MedicalSupplies = supplies;
-            }
-            else
-            {
-                medicalEvent.MedicalSupplies = new List<MedicalSupply>();
-            }
-
             await _context.MedicalEvents.AddAsync(medicalEvent);
+            await _context.SaveChangesAsync();
+
+            foreach (var mem in medicationUsages)
+            {
+                mem.MedicalEventId = medicalEvent.MedicalEventId;
+                var medication = await _context.Medications.FindAsync(mem.MedicationId);
+                if (medication == null || medication.Quantity < mem.QuantityUsed)
+                    return false;
+                medication.Quantity -= mem.QuantityUsed;
+                await _context.MedicalEventMedications.AddAsync(mem);
+            }
+
+            foreach (var mes in supplyUsages)
+            {
+                mes.MedicalEventId = medicalEvent.MedicalEventId;
+                var supply = await _context.MedicalSupplies.FindAsync(mes.MedicalSupplyId);
+                if (supply == null || supply.Quantity < mes.QuantityUsed)
+                    return false;
+                supply.Quantity -= mes.QuantityUsed;
+                await _context.MedicalEventMedicalSupplies.AddAsync(mes);
+            }
+
             return await _context.SaveChangesAsync() > 0;
         }
 
-        public async Task<bool> UpdateMedicalEventAsync(MedicalEvent medicalEvent, List<int>? medicationIds, List<int>? medicalSupplyIds)
+        public async Task<bool> UpdateMedicalEventAsync(
+            MedicalEvent medicalEvent,
+            List<MedicalEventMedication> medicationUsages,
+            List<MedicalEventMedicalSupply> supplyUsages)
         {
             var existing = await _context.MedicalEvents
-                .Include(me => me.Medications)
-                .Include(me => me.MedicalSupplies)
+                .Include(me => me.MedicalEventMedications)
+                .Include(me => me.MedicalEventMedicalSupplies)
                 .FirstOrDefaultAsync(me => me.MedicalEventId == medicalEvent.MedicalEventId);
+
             if (existing == null)
                 return false;
 
@@ -99,18 +105,42 @@ namespace DAOs
             if (medicalEvent.Note != null) existing.Note = medicalEvent.Note.Trim();
             if (medicalEvent.Date != default) existing.Date = medicalEvent.Date;
 
-            // Cập nhật danh sách thuốc nếu có truyền lên
-            if (medicationIds != null)
+            // Trả lại số lượng thuốc/vật tư cũ
+            foreach (var old in existing.MedicalEventMedications)
             {
-                var medications = await _context.Medications.Where(m => medicationIds.Contains(m.MedicationId)).ToListAsync();
-                existing.Medications = medications;
+                var medication = await _context.Medications.FindAsync(old.MedicationId);
+                if (medication != null)
+                    medication.Quantity += old.QuantityUsed;
+            }
+            _context.MedicalEventMedications.RemoveRange(existing.MedicalEventMedications);
+
+            foreach (var old in existing.MedicalEventMedicalSupplies)
+            {
+                var supply = await _context.MedicalSupplies.FindAsync(old.MedicalSupplyId);
+                if (supply != null)
+                    supply.Quantity += old.QuantityUsed;
+            }
+            _context.MedicalEventMedicalSupplies.RemoveRange(existing.MedicalEventMedicalSupplies);
+
+            // Thêm bản ghi mới và trừ số lượng
+            foreach (var mem in medicationUsages)
+            {
+                mem.MedicalEventId = existing.MedicalEventId;
+                var medication = await _context.Medications.FindAsync(mem.MedicationId);
+                if (medication == null || medication.Quantity < mem.QuantityUsed)
+                    return false;
+                medication.Quantity -= mem.QuantityUsed;
+                await _context.MedicalEventMedications.AddAsync(mem);
             }
 
-            // Cập nhật danh sách thiết bị y tế nếu có truyền lên
-            if (medicalSupplyIds != null)
+            foreach (var mes in supplyUsages)
             {
-                var supplies = await _context.MedicalSupplies.Where(s => medicalSupplyIds.Contains(s.MedicalSupplyId)).ToListAsync();
-                existing.MedicalSupplies = supplies;
+                mes.MedicalEventId = existing.MedicalEventId;
+                var supply = await _context.MedicalSupplies.FindAsync(mes.MedicalSupplyId);
+                if (supply == null || supply.Quantity < mes.QuantityUsed)
+                    return false;
+                supply.Quantity -= mes.QuantityUsed;
+                await _context.MedicalEventMedicalSupplies.AddAsync(mes);
             }
 
             _context.MedicalEvents.Update(existing);
@@ -119,11 +149,31 @@ namespace DAOs
 
         public async Task<bool> DeleteMedicalEventAsync(int eventId)
         {
-            var medicalEvent = await _context.MedicalEvents.FirstOrDefaultAsync(me => me.MedicalEventId == eventId);
-            if (medicalEvent == null)
+            var existing = await _context.MedicalEvents
+                .Include(me => me.MedicalEventMedications)
+                .Include(me => me.MedicalEventMedicalSupplies)
+                .FirstOrDefaultAsync(me => me.MedicalEventId == eventId);
+
+            if (existing == null)
                 return false;
 
-            _context.MedicalEvents.Remove(medicalEvent);
+            foreach (var mem in existing.MedicalEventMedications)
+            {
+                var medication = await _context.Medications.FindAsync(mem.MedicationId);
+                if (medication != null)
+                    medication.Quantity += mem.QuantityUsed;
+            }
+            foreach (var mes in existing.MedicalEventMedicalSupplies)
+            {
+                var supply = await _context.MedicalSupplies.FindAsync(mes.MedicalSupplyId);
+                if (supply != null)
+                    supply.Quantity += mes.QuantityUsed;
+            }
+
+            _context.MedicalEventMedications.RemoveRange(existing.MedicalEventMedications);
+            _context.MedicalEventMedicalSupplies.RemoveRange(existing.MedicalEventMedicalSupplies);
+            _context.MedicalEvents.Remove(existing);
+
             return await _context.SaveChangesAsync() > 0;
         }
 
@@ -140,8 +190,8 @@ namespace DAOs
                 var events = await _context.MedicalEvents
                     .Where(me => me.StudentId == student.StudentId)
                     .Include(me => me.Nurse)
-                    .Include(me => me.Medications)
-                    .Include(me => me.MedicalSupplies)
+                    .Include(me => me.MedicalEventMedications).ThenInclude(mem => mem.Medication)
+                    .Include(me => me.MedicalEventMedicalSupplies).ThenInclude(mes => mes.MedicalSupply)
                     .AsNoTracking()
                     .ToListAsync();
                 result.Add((student, events));

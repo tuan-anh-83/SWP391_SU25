@@ -36,14 +36,22 @@ namespace SWP391_BE.Controllers
                 StudentName = me.Student?.Fullname,
                 me.NurseId,
                 NurseName = me.Nurse?.Fullname,
-                MedicationIds = me.Medications?.Select(m => m.MedicationId).ToList(),
-                MedicationNames = me.Medications?.Select(m => m.Name).ToList(),
-                MedicalSupplyIds = me.MedicalSupplies?.Select(s => s.MedicalSupplyId).ToList(),
-                MedicalSupplyNames = me.MedicalSupplies?.Select(s => s.Name).ToList(),
                 me.Type,
                 me.Description,
                 me.Note,
-                me.Date
+                me.Date,
+                Medications = me.MedicalEventMedications?.Select(mem => new
+                {
+                    mem.MedicationId,
+                    mem.Medication?.Name,
+                    mem.QuantityUsed
+                }).ToList(),
+                MedicalSupplies = me.MedicalEventMedicalSupplies?.Select(mes => new
+                {
+                    mes.MedicalSupplyId,
+                    mes.MedicalSupply?.Name,
+                    mes.QuantityUsed
+                }).ToList()
             });
 
             return Ok(result);
@@ -63,14 +71,22 @@ namespace SWP391_BE.Controllers
                 StudentName = medicalEvent.Student?.Fullname,
                 medicalEvent.NurseId,
                 NurseName = medicalEvent.Nurse?.Fullname,
-                MedicationIds = medicalEvent.Medications?.Select(m => m.MedicationId).ToList(),
-                MedicationNames = medicalEvent.Medications?.Select(m => m.Name).ToList(),
-                MedicalSupplyIds = medicalEvent.MedicalSupplies?.Select(s => s.MedicalSupplyId).ToList(),
-                MedicalSupplyNames = medicalEvent.MedicalSupplies?.Select(s => s.Name).ToList(),
                 medicalEvent.Type,
                 medicalEvent.Description,
                 medicalEvent.Note,
-                medicalEvent.Date
+                medicalEvent.Date,
+                Medications = medicalEvent.MedicalEventMedications?.Select(mem => new
+                {
+                    mem.MedicationId,
+                    mem.Medication?.Name,
+                    mem.QuantityUsed
+                }).ToList(),
+                MedicalSupplies = medicalEvent.MedicalEventMedicalSupplies?.Select(mes => new
+                {
+                    mes.MedicalSupplyId,
+                    mes.MedicalSupply?.Name,
+                    mes.QuantityUsed
+                }).ToList()
             };
 
             return Ok(result);
@@ -100,10 +116,22 @@ namespace SWP391_BE.Controllers
                 Date = dto.Date
             };
 
+            var medicationUsages = dto.Medications?.Select(m => new MedicalEventMedication
+            {
+                MedicationId = m.MedicationId,
+                QuantityUsed = m.QuantityUsed
+            }).ToList() ?? new List<MedicalEventMedication>();
+
+            var supplyUsages = dto.MedicalSupplies?.Select(s => new MedicalEventMedicalSupply
+            {
+                MedicalSupplyId = s.MedicalSupplyId,
+                QuantityUsed = s.QuantityUsed
+            }).ToList() ?? new List<MedicalEventMedicalSupply>();
+
             var created = await _medicalEventService.CreateMedicalEventAsync(
                 medicalEvent,
-                dto.MedicationIds,
-                dto.MedicalSupplyIds
+                medicationUsages,
+                supplyUsages
             );
             if (!created)
                 return BadRequest(new { message = "Failed to create medical event." });
@@ -137,10 +165,22 @@ namespace SWP391_BE.Controllers
             if (dto.Date.HasValue && dto.Date.Value != medicalEvent.Date)
                 medicalEvent.Date = dto.Date.Value;
 
+            var medicationUsages = dto.Medications?.Select(m => new MedicalEventMedication
+            {
+                MedicationId = m.MedicationId,
+                QuantityUsed = m.QuantityUsed
+            }).ToList() ?? new List<MedicalEventMedication>();
+
+            var supplyUsages = dto.MedicalSupplies?.Select(s => new MedicalEventMedicalSupply
+            {
+                MedicalSupplyId = s.MedicalSupplyId,
+                QuantityUsed = s.QuantityUsed
+            }).ToList() ?? new List<MedicalEventMedicalSupply>();
+
             var updated = await _medicalEventService.UpdateMedicalEventAsync(
                 medicalEvent,
-                dto.MedicationIds,
-                dto.MedicalSupplyIds
+                medicationUsages,
+                supplyUsages
             );
             if (!updated)
                 return BadRequest(new { message = "Failed to update medical event." });
@@ -194,8 +234,18 @@ namespace SWP391_BE.Controllers
                     me.Note,
                     me.Date,
                     NurseName = me.Nurse?.Fullname,
-                    MedicationNames = me.Medications?.Select(m => m.Name).ToList(),
-                    MedicalSupplyNames = me.MedicalSupplies?.Select(s => s.Name).ToList()
+                    Medications = me.MedicalEventMedications?.Select(mem => new
+                    {
+                        mem.MedicationId,
+                        mem.Medication?.Name,
+                        mem.QuantityUsed
+                    }).ToList(),
+                    MedicalSupplies = me.MedicalEventMedicalSupplies?.Select(mes => new
+                    {
+                        mes.MedicalSupplyId,
+                        mes.MedicalSupply?.Name,
+                        mes.QuantityUsed
+                    }).ToList()
                 }).ToList(),
                 Message = d.events.Any() ? null : "Hiện chưa có sự kiện y tế"
             });

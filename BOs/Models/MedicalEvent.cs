@@ -15,7 +15,9 @@ namespace BOs.Models
 
         public Student Student { get; set; }
         public Account Nurse { get; set; }
-        public ICollection<Medication>? Medications { get; set; } // Có thể null
-        public ICollection<MedicalSupply>? MedicalSupplies { get; set; } // Có thể null
+
+        // Navigation for many-to-many with payload
+        public ICollection<MedicalEventMedication> MedicalEventMedications { get; set; }
+        public ICollection<MedicalEventMedicalSupply> MedicalEventMedicalSupplies { get; set; }
     }
 }

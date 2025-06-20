@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BOs.Migrations
 {
     /// <inheritdoc />
-    public partial class HealthCheck : Migration
+    public partial class Quantity : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -48,7 +48,8 @@ namespace BOs.Migrations
                     Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Type = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    ExpiredDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    ExpiredDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Quantity = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -64,7 +65,8 @@ namespace BOs.Migrations
                     Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Type = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Usage = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    ExpiredDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    ExpiredDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -241,7 +243,7 @@ namespace BOs.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     StudentID = table.Column<int>(type: "int", nullable: false),
                     NurseID = table.Column<int>(type: "int", nullable: false),
-                    ParentID = table.Column<int>(type: "int", nullable: false),
+                    ParentID = table.Column<int>(type: "int", nullable: true),
                     Result = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Height = table.Column<double>(type: "float", nullable: true),
@@ -445,21 +447,22 @@ namespace BOs.Migrations
                 name: "MedicalEventMedicalSupply",
                 columns: table => new
                 {
-                    MedicalEventsMedicalEventId = table.Column<int>(type: "int", nullable: false),
-                    MedicalSuppliesMedicalSupplyId = table.Column<int>(type: "int", nullable: false)
+                    MedicalEventId = table.Column<int>(type: "int", nullable: false),
+                    MedicalSupplyId = table.Column<int>(type: "int", nullable: false),
+                    QuantityUsed = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MedicalEventMedicalSupply", x => new { x.MedicalEventsMedicalEventId, x.MedicalSuppliesMedicalSupplyId });
+                    table.PrimaryKey("PK_MedicalEventMedicalSupply", x => new { x.MedicalEventId, x.MedicalSupplyId });
                     table.ForeignKey(
-                        name: "FK_MedicalEventMedicalSupply_MedicalEvent_MedicalEventsMedicalEventId",
-                        column: x => x.MedicalEventsMedicalEventId,
+                        name: "FK_MedicalEventMedicalSupply_MedicalEvent_MedicalEventId",
+                        column: x => x.MedicalEventId,
                         principalTable: "MedicalEvent",
                         principalColumn: "MedicalEventId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_MedicalEventMedicalSupply_MedicalSupply_MedicalSuppliesMedicalSupplyId",
-                        column: x => x.MedicalSuppliesMedicalSupplyId,
+                        name: "FK_MedicalEventMedicalSupply_MedicalSupply_MedicalSupplyId",
+                        column: x => x.MedicalSupplyId,
                         principalTable: "MedicalSupply",
                         principalColumn: "MedicalSupplyId",
                         onDelete: ReferentialAction.Cascade);
@@ -469,21 +472,22 @@ namespace BOs.Migrations
                 name: "MedicalEventMedication",
                 columns: table => new
                 {
-                    MedicalEventsMedicalEventId = table.Column<int>(type: "int", nullable: false),
-                    MedicationsMedicationId = table.Column<int>(type: "int", nullable: false)
+                    MedicalEventId = table.Column<int>(type: "int", nullable: false),
+                    MedicationId = table.Column<int>(type: "int", nullable: false),
+                    QuantityUsed = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MedicalEventMedication", x => new { x.MedicalEventsMedicalEventId, x.MedicationsMedicationId });
+                    table.PrimaryKey("PK_MedicalEventMedication", x => new { x.MedicalEventId, x.MedicationId });
                     table.ForeignKey(
-                        name: "FK_MedicalEventMedication_MedicalEvent_MedicalEventsMedicalEventId",
-                        column: x => x.MedicalEventsMedicalEventId,
+                        name: "FK_MedicalEventMedication_MedicalEvent_MedicalEventId",
+                        column: x => x.MedicalEventId,
                         principalTable: "MedicalEvent",
                         principalColumn: "MedicalEventId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_MedicalEventMedication_Medication_MedicationsMedicationId",
-                        column: x => x.MedicationsMedicationId,
+                        name: "FK_MedicalEventMedication_Medication_MedicationId",
+                        column: x => x.MedicationId,
                         principalTable: "Medication",
                         principalColumn: "MedicationId",
                         onDelete: ReferentialAction.Cascade);
@@ -598,14 +602,14 @@ namespace BOs.Migrations
                 column: "StudentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_MedicalEventMedicalSupply_MedicalSuppliesMedicalSupplyId",
+                name: "IX_MedicalEventMedicalSupply_MedicalSupplyId",
                 table: "MedicalEventMedicalSupply",
-                column: "MedicalSuppliesMedicalSupplyId");
+                column: "MedicalSupplyId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_MedicalEventMedication_MedicationsMedicationId",
+                name: "IX_MedicalEventMedication_MedicationId",
                 table: "MedicalEventMedication",
-                column: "MedicationsMedicationId");
+                column: "MedicationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ParentMedicationDetail_RequestId",

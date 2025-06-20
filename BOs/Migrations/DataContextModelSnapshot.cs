@@ -192,7 +192,7 @@ namespace BOs.Migrations
                     b.Property<string>("NutritionStatus")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ParentID")
+                    b.Property<int?>("ParentID")
                         .HasColumnType("int");
 
                     b.Property<string>("Result")
@@ -322,6 +322,42 @@ namespace BOs.Migrations
                     b.ToTable("MedicalEvent", (string)null);
                 });
 
+            modelBuilder.Entity("BOs.Models.MedicalEventMedicalSupply", b =>
+                {
+                    b.Property<int>("MedicalEventId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MedicalSupplyId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QuantityUsed")
+                        .HasColumnType("int");
+
+                    b.HasKey("MedicalEventId", "MedicalSupplyId");
+
+                    b.HasIndex("MedicalSupplyId");
+
+                    b.ToTable("MedicalEventMedicalSupply", (string)null);
+                });
+
+            modelBuilder.Entity("BOs.Models.MedicalEventMedication", b =>
+                {
+                    b.Property<int>("MedicalEventId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MedicationId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QuantityUsed")
+                        .HasColumnType("int");
+
+                    b.HasKey("MedicalEventId", "MedicationId");
+
+                    b.HasIndex("MedicationId");
+
+                    b.ToTable("MedicalEventMedication", (string)null);
+                });
+
             modelBuilder.Entity("BOs.Models.MedicalSupply", b =>
                 {
                     b.Property<int>("MedicalSupplyId")
@@ -343,6 +379,9 @@ namespace BOs.Migrations
                         .HasMaxLength(255)
                         .IsUnicode(true)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
 
                     b.Property<string>("Type")
                         .HasMaxLength(100)
@@ -370,6 +409,9 @@ namespace BOs.Migrations
                         .HasMaxLength(200)
                         .IsUnicode(true)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
 
                     b.Property<string>("Type")
                         .IsRequired()
@@ -775,36 +817,6 @@ namespace BOs.Migrations
                     b.ToTable("Vaccine", (string)null);
                 });
 
-            modelBuilder.Entity("MedicalEventMedicalSupply", b =>
-                {
-                    b.Property<int>("MedicalEventsMedicalEventId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MedicalSuppliesMedicalSupplyId")
-                        .HasColumnType("int");
-
-                    b.HasKey("MedicalEventsMedicalEventId", "MedicalSuppliesMedicalSupplyId");
-
-                    b.HasIndex("MedicalSuppliesMedicalSupplyId");
-
-                    b.ToTable("MedicalEventMedicalSupply", (string)null);
-                });
-
-            modelBuilder.Entity("MedicalEventMedication", b =>
-                {
-                    b.Property<int>("MedicalEventsMedicalEventId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MedicationsMedicationId")
-                        .HasColumnType("int");
-
-                    b.HasKey("MedicalEventsMedicalEventId", "MedicationsMedicationId");
-
-                    b.HasIndex("MedicationsMedicationId");
-
-                    b.ToTable("MedicalEventMedication", (string)null);
-                });
-
             modelBuilder.Entity("BOs.Models.Account", b =>
                 {
                     b.HasOne("BOs.Models.Role", "Role")
@@ -846,8 +858,7 @@ namespace BOs.Migrations
                     b.HasOne("BOs.Models.Account", "Parent")
                         .WithMany()
                         .HasForeignKey("ParentID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("BOs.Models.Student", "Student")
                         .WithMany()
@@ -898,6 +909,44 @@ namespace BOs.Migrations
                     b.Navigation("Nurse");
 
                     b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("BOs.Models.MedicalEventMedicalSupply", b =>
+                {
+                    b.HasOne("BOs.Models.MedicalEvent", "MedicalEvent")
+                        .WithMany("MedicalEventMedicalSupplies")
+                        .HasForeignKey("MedicalEventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BOs.Models.MedicalSupply", "MedicalSupply")
+                        .WithMany("MedicalEventMedicalSupplies")
+                        .HasForeignKey("MedicalSupplyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MedicalEvent");
+
+                    b.Navigation("MedicalSupply");
+                });
+
+            modelBuilder.Entity("BOs.Models.MedicalEventMedication", b =>
+                {
+                    b.HasOne("BOs.Models.MedicalEvent", "MedicalEvent")
+                        .WithMany("MedicalEventMedications")
+                        .HasForeignKey("MedicalEventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BOs.Models.Medication", "Medication")
+                        .WithMany("MedicalEventMedications")
+                        .HasForeignKey("MedicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MedicalEvent");
+
+                    b.Navigation("Medication");
                 });
 
             modelBuilder.Entity("BOs.Models.ParentMedicationDetail", b =>
@@ -1035,36 +1084,6 @@ namespace BOs.Migrations
                     b.Navigation("Student");
                 });
 
-            modelBuilder.Entity("MedicalEventMedicalSupply", b =>
-                {
-                    b.HasOne("BOs.Models.MedicalEvent", null)
-                        .WithMany()
-                        .HasForeignKey("MedicalEventsMedicalEventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BOs.Models.MedicalSupply", null)
-                        .WithMany()
-                        .HasForeignKey("MedicalSuppliesMedicalSupplyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("MedicalEventMedication", b =>
-                {
-                    b.HasOne("BOs.Models.MedicalEvent", null)
-                        .WithMany()
-                        .HasForeignKey("MedicalEventsMedicalEventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BOs.Models.Medication", null)
-                        .WithMany()
-                        .HasForeignKey("MedicationsMedicationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("BOs.Models.Account", b =>
                 {
                     b.Navigation("PasswordResetTokens");
@@ -1080,6 +1099,23 @@ namespace BOs.Migrations
             modelBuilder.Entity("BOs.Models.Class", b =>
                 {
                     b.Navigation("Students");
+                });
+
+            modelBuilder.Entity("BOs.Models.MedicalEvent", b =>
+                {
+                    b.Navigation("MedicalEventMedicalSupplies");
+
+                    b.Navigation("MedicalEventMedications");
+                });
+
+            modelBuilder.Entity("BOs.Models.MedicalSupply", b =>
+                {
+                    b.Navigation("MedicalEventMedicalSupplies");
+                });
+
+            modelBuilder.Entity("BOs.Models.Medication", b =>
+                {
+                    b.Navigation("MedicalEventMedications");
                 });
 
             modelBuilder.Entity("BOs.Models.ParentMedicationRequest", b =>

@@ -42,7 +42,8 @@ namespace SWP391_BE.Controllers
                 Name = dto.Name,
                 Type = dto.Type,
                 Usage = dto.Usage,
-                ExpiredDate = dto.ExpiredDate
+                ExpiredDate = dto.ExpiredDate,
+                Quantity = dto.Quantity 
             };
             var created = await _service.CreateAsync(medication);
             return Ok(new { message = "Medication created successfully.", data = created });
@@ -64,6 +65,7 @@ namespace SWP391_BE.Controllers
                 medication.Usage = dto.Usage;
             if (dto.ExpiredDate.HasValue && dto.ExpiredDate.Value != medication.ExpiredDate)
                 medication.ExpiredDate = dto.ExpiredDate.Value;
+            medication.Quantity = dto.Quantity;
 
             var result = await _service.UpdateAsync(medication);
             if (!result)

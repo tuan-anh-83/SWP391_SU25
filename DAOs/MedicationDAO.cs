@@ -54,6 +54,7 @@ namespace DAOs
             existing.Type = medication.Type;
             existing.Usage = medication.Usage;
             existing.ExpiredDate = medication.ExpiredDate;
+            existing.Quantity = medication.Quantity;
 
             await _context.SaveChangesAsync();
             return true;

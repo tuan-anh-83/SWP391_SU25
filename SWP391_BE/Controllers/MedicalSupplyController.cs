@@ -27,7 +27,8 @@ public class MedicalSupplyController : ControllerBase
             s.Name,
             s.Type,
             s.Description,
-            s.ExpiredDate
+            s.ExpiredDate,
+            s.Quantity
         });
         return Ok(result);
     }
@@ -44,7 +45,8 @@ public class MedicalSupplyController : ControllerBase
             s.Name,
             s.Type,
             s.Description,
-            s.ExpiredDate
+            s.ExpiredDate,
+            s.Quantity
         });
     }
 
@@ -57,7 +59,8 @@ public class MedicalSupplyController : ControllerBase
             Name = dto.Name,
             Type = dto.Type,
             Description = dto.Description,
-            ExpiredDate = dto.ExpiredDate
+            ExpiredDate = dto.ExpiredDate,
+            Quantity = dto.Quantity
         };
         var created = await _service.CreateAsync(supply);
         return Ok(new { message = "Medical supply created successfully.", data = created });
@@ -78,6 +81,7 @@ public class MedicalSupplyController : ControllerBase
             supply.Type = dto.Type;
         if (!string.IsNullOrWhiteSpace(dto.Description) && dto.Description != "string")
             supply.Description = dto.Description;
+        supply.Quantity = dto.Quantity;
 
         // Xử lý expiredDate: nếu là null hoặc giá trị mặc định của swagger thì giữ nguyên
         if (dto.ExpiredDate == null || dto.ExpiredDate == DateTime.MinValue)

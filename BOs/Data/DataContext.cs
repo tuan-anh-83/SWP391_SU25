@@ -40,6 +40,8 @@ namespace BOs.Data
         public DbSet<VaccinationRecord> VaccinationRecords { get; set; }
         public DbSet<VaccinationFollowUp> VaccinationFollowUps { get; set; }
         public DbSet<HealthCheck> HealthChecks { get; set; }
+        public DbSet<MedicalEventMedication> MedicalEventMedications { get; set; }
+        public DbSet<MedicalEventMedicalSupply> MedicalEventMedicalSupplies { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer(GetConnectionString());
@@ -315,6 +317,7 @@ namespace BOs.Data
                       .IsUnicode(true);
 
                 entity.Property(m => m.ExpiredDate).IsRequired();
+                entity.Property(m => m.Quantity).IsRequired();
             });
             #endregion
 
@@ -350,14 +353,6 @@ namespace BOs.Data
                       .WithMany()
                       .HasForeignKey(me => me.NurseId)
                       .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasMany(me => me.Medications)
-                      .WithMany(m => m.MedicalEvents)
-                      .UsingEntity(j => j.ToTable("MedicalEventMedication"));
-
-                entity.HasMany(e => e.MedicalSupplies)
-                      .WithMany(s => s.MedicalEvents)
-                      .UsingEntity(j => j.ToTable("MedicalEventMedicalSupply"));
             });
             #endregion
 
@@ -424,6 +419,7 @@ namespace BOs.Data
                 entity.Property(s => s.Type).HasMaxLength(100).IsUnicode(true);
                 entity.Property(s => s.Description).HasMaxLength(500).IsUnicode(true);
                 entity.Property(s => s.ExpiredDate).IsRequired(false);
+                entity.Property(s => s.Quantity).IsRequired();
             });
             #endregion
 
@@ -558,6 +554,40 @@ namespace BOs.Data
                       .WithMany()
                       .HasForeignKey(h => h.ParentID)
                       .OnDelete(DeleteBehavior.Restrict);
+            });
+            #endregion
+
+            #region MedicalEventMedication
+            modelBuilder.Entity<MedicalEventMedication>(entity =>
+            {
+                entity.ToTable("MedicalEventMedication");
+                entity.HasKey(e => new { e.MedicalEventId, e.MedicationId });
+                entity.Property(e => e.QuantityUsed).IsRequired();
+
+                entity.HasOne(e => e.MedicalEvent)
+                      .WithMany(e => e.MedicalEventMedications)
+                      .HasForeignKey(e => e.MedicalEventId);
+
+                entity.HasOne(e => e.Medication)
+                      .WithMany(m => m.MedicalEventMedications)
+                      .HasForeignKey(e => e.MedicationId);
+            });
+            #endregion
+
+            #region MedicalEventMedicalSupply
+            modelBuilder.Entity<MedicalEventMedicalSupply>(entity =>
+            {
+                entity.ToTable("MedicalEventMedicalSupply");
+                entity.HasKey(e => new { e.MedicalEventId, e.MedicalSupplyId });
+                entity.Property(e => e.QuantityUsed).IsRequired();
+
+                entity.HasOne(e => e.MedicalEvent)
+                      .WithMany(e => e.MedicalEventMedicalSupplies)
+                      .HasForeignKey(e => e.MedicalEventId);
+
+                entity.HasOne(e => e.MedicalSupply)
+                      .WithMany(s => s.MedicalEventMedicalSupplies)
+                      .HasForeignKey(e => e.MedicalSupplyId);
             });
             #endregion
 

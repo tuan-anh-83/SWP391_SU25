@@ -587,6 +587,58 @@ namespace SWP391_BE.Controllers
         }
 
         [Authorize(Roles = "Admin")]
+        [HttpPost("admin/create-nurse")]
+        public async Task<IActionResult> CreateNurseAccount([FromBody] NurseAccountCreateDTO nurseRequest)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors)
+                                              .Select(e => e.ErrorMessage)
+                                              .ToList();
+                return BadRequest(new { errors });
+            }
+
+            // Check if email already exists
+            var existingAccount = await _accountService.GetAccountByEmailAsync(nurseRequest.Email);
+            if (existingAccount != null)
+                return Conflict("Email already exists.");
+
+            var nurseAccount = new Account
+            {
+                Email = nurseRequest.Email,
+                Password = nurseRequest.Password,
+                Fullname = nurseRequest.Fullname,
+                Address = nurseRequest.Address,
+                PhoneNumber = nurseRequest.PhoneNumber,
+                DateOfBirth = nurseRequest.DateOfBirth,
+                RoleID = 2, // Nurse role
+                Status = "Active", // Admin-created accounts are immediately active
+                CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone),
+                UpdateAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vietnamTimeZone)
+            };
+
+            bool result = await _accountService.SignUpAsync(nurseAccount);
+            if (!result)
+                return StatusCode(500, "Failed to create nurse account.");
+
+            return Ok(new
+            {
+                message = "Nurse account created successfully.",
+                account = new
+                {
+                    nurseAccount.AccountID,
+                    nurseAccount.Email,
+                    nurseAccount.Fullname,
+                    nurseAccount.Address,
+                    nurseAccount.PhoneNumber,
+                    nurseAccount.DateOfBirth,
+                    Role = "Nurse",
+                    nurseAccount.Status
+                }
+            });
+        }
+
+        [Authorize(Roles = "Admin")]
         [HttpDelete("admin/delete/{id}")]
         public async Task<IActionResult> DeleteAccount(int id)
         {

@@ -28,7 +28,9 @@ namespace SWP391_BE.Controllers
         public async Task<IActionResult> GetAll()
         {
             var records = await _healthRecordService.GetAllHealthRecordsAsync();
-            return Ok(records);
+            // Chuyển đổi sang DTO để loại bỏ vòng lặp tham chiếu
+            var dtos = records.Select(ToDTO).ToList();
+            return Ok(dtos);
         }
 
         [HttpGet("GetHealthRecordById/{id}")]

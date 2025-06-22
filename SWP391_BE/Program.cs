@@ -25,9 +25,9 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Education HealthCare API",
+        Title = "School Medical Management System",
         Version = "v1",
-        Description = "API for Education HealthCare project with JWT Authentication"
+        Description = "API for School Medical Management System project with JWT Authentication"
     });
 
 

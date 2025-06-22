@@ -148,17 +148,32 @@ public class VaccinationController : ControllerBase
         if (accountIdClaim == null || !int.TryParse(accountIdClaim.Value, out int parentId))
             return Unauthorized(new { message = "Invalid or missing token." });
 
-        var consent = new VaccinationConsent
+        // Kiểm tra consent đã tồn tại chưa (theo campaignId, studentId, parentId)
+        var existingConsent = await _service.GetConsentAsync(dto.CampaignId, dto.StudentId, parentId);
+        VaccinationConsent consent;
+        if (existingConsent != null)
         {
-            CampaignId = dto.CampaignId,
-            StudentId = dto.StudentId,
-            ParentId = parentId,
-            IsAgreed = dto.IsAgreed,
-            Note = dto.Note,
-            DateConfirmed = DateTime.UtcNow
-        };
-        var created = await _service.CreateConsentAsync(consent);
-        return Ok(new { message = "Consent submitted successfully.", data = created });
+            // Update consent
+            existingConsent.IsAgreed = dto.IsAgreed;
+            existingConsent.Note = dto.Note;
+            existingConsent.DateConfirmed = DateTime.UtcNow;
+            consent = await _service.UpdateConsentAsync(existingConsent);
+        }
+        else
+        {
+            // Tạo mới consent
+            consent = new VaccinationConsent
+            {
+                CampaignId = dto.CampaignId,
+                StudentId = dto.StudentId,
+                ParentId = parentId,
+                IsAgreed = dto.IsAgreed,
+                Note = dto.Note,
+                DateConfirmed = DateTime.UtcNow
+            };
+            consent = await _service.CreateConsentAsync(consent);
+        }
+        return Ok(new { message = "Consent submitted successfully.", data = consent });
     }
 
     // ----------- RECORD -----------
@@ -186,6 +201,13 @@ public class VaccinationController : ControllerBase
     [Authorize(Roles = "Nurse,Admin")]
     public async Task<IActionResult> CreateRecord([FromBody] VaccinationRecordCreateDTO dto)
     {
+        // Lấy consent mới nhất hoặc đúng parent
+        var consent = await _service.GetLatestConsentAsync(dto.CampaignId, dto.StudentId);
+        if (consent == null || consent.IsAgreed != true)
+        {
+            return BadRequest(new { message = "Không thể tạo record: Phụ huynh chưa đồng ý tiêm." });
+        }
+
         var record = new VaccinationRecord
         {
             CampaignId = dto.CampaignId,

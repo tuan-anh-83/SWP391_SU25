@@ -19,7 +19,9 @@ namespace Services
         // Consent
         Task<List<VaccinationConsent>> GetConsentsByCampaignAsync(int campaignId);
         Task<List<VaccinationConsent>> GetConsentsByParentIdAsync(int parentId);
-        Task<VaccinationConsent?> GetConsentAsync(int campaignId, int studentId);
+        Task<VaccinationConsent?> GetConsentAsync(int campaignId, int studentId, int parentId);
+        Task<VaccinationConsent?> GetLatestConsentAsync(int campaignId, int studentId);
+        Task<VaccinationConsent> UpdateConsentAsync(VaccinationConsent consent);
         Task<VaccinationConsent> CreateConsentAsync(VaccinationConsent consent);
 
         // Record

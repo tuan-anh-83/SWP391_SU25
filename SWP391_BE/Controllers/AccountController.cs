@@ -561,6 +561,38 @@ namespace SWP391_BE.Controllers
         #region Admin Endpoints
 
         [Authorize(Roles = "Admin")]
+        [HttpPatch("admin/update-status/{id}")]
+        public async Task<IActionResult> UpdateAccountStatus(int id, [FromBody] StatusUpdateRequestDTO request)
+        {
+            if (id <= 0)
+                return BadRequest("Invalid account ID.");
+
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors)
+                                              .Select(e => e.ErrorMessage)
+                                              .ToList();
+                return BadRequest(new { errors });
+            }
+
+            var account = await _accountService.GetAccountByIdAsync(id);
+            if (account == null)
+                return NotFound("Account not found.");
+
+            var allowedStatuses = new[] { "Active", "InActive" };
+            if (!allowedStatuses.Contains(request.Status, StringComparer.OrdinalIgnoreCase))
+                return BadRequest("Invalid status. Only 'Active' and 'InActive' are allowed.");
+
+            bool result = await _accountService.UpdateAccountStatusAsync(account, request.Status);
+            if (!result)
+                return StatusCode(500, "Failed to update account status.");
+
+            await _emailService.SendStatusUserAsync(account.Email, request.Status);
+
+            return Ok(new { message = "Account status updated successfully." });
+        }
+
+        [Authorize(Roles = "Admin")]
         [HttpGet("admin/statistics/signup-count")]
         public async Task<IActionResult> GetSignUpCounts()
         {

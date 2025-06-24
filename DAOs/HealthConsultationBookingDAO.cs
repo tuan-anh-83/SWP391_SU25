@@ -26,7 +26,9 @@ namespace DAOs
         {
             return await _context.HealthConsultationBookings
                 .Include(b => b.Student)
+                    .ThenInclude(s => s.Class)
                 .Include(b => b.Nurse)
+                .Include(b => b.Parent)
                 .Where(b => b.ParentId == parentId)
                 .ToListAsync();
         }
@@ -35,6 +37,8 @@ namespace DAOs
         {
             return await _context.HealthConsultationBookings
                 .Include(b => b.Student)
+                    .ThenInclude(s => s.Class)
+                .Include(b => b.Nurse)
                 .Include(b => b.Parent)
                 .Where(b => b.NurseId == nurseId)
                 .ToListAsync();
@@ -44,6 +48,7 @@ namespace DAOs
         {
             return await _context.HealthConsultationBookings
                 .Include(b => b.Student)
+                    .ThenInclude(s => s.Class)
                 .Include(b => b.Nurse)
                 .Include(b => b.Parent)
                 .FirstOrDefaultAsync(b => b.BookingId == bookingId);

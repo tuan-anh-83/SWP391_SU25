@@ -282,6 +282,11 @@ namespace DAOs
                 a.Status.ToLower() == "active");
         }
         
-
+        public async Task<List<Account>> GetActiveNursesAsync()
+        {
+            return await _context.Accounts
+                .Where(a => a.RoleID == 2 && a.Status == "Active")
+                .ToListAsync();
+        }
     }
 }

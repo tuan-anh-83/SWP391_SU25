@@ -89,6 +89,11 @@ namespace Repos
         {
             return await AccountDAO.Instance.GetNurseCountAsync();
         }
+
+        public async Task<List<Account>> GetActiveNursesAsync()
+        {
+            return await AccountDAO.Instance.GetActiveNursesAsync();
+        }
     }
 
 }

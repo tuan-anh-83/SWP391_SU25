@@ -216,7 +216,7 @@ namespace SWP391_BE.Controllers
         [Authorize(Roles = "Parent")]
         public async Task<IActionResult> GetMedicalEventsForParent()
         {
-            var accountIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            var accountIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (accountIdClaim == null || !int.TryParse(accountIdClaim.Value, out int parentId))
                 return Unauthorized(new { message = "Invalid or missing token." });
 
@@ -226,6 +226,8 @@ namespace SWP391_BE.Controllers
             {
                 StudentId = d.student.StudentId,
                 StudentName = d.student.Fullname,
+                StudentCode = d.student.StudentCode,
+                ClassName = d.student.Class?.ClassName,
                 Events = d.events.Select(me => new
                 {
                     me.MedicalEventId,

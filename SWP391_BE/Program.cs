@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text;
+using DAOs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,6 +71,7 @@ builder.Services.AddScoped<IMedicationRepo, MedicationRepo>();
 builder.Services.AddScoped<IParentMedicationRequestRepo, ParentMedicationRequestRepo>();
 builder.Services.AddScoped<IMedicalSupplyRepo, MedicalSupplyRepo>();
 builder.Services.AddScoped<IVaccinationRepo, VaccinationRepo>();
+builder.Services.AddScoped<IHealthConsultationBookingRepo, HealthConsultationBookingRepo>();
 
 
 // Services
@@ -88,6 +90,10 @@ builder.Services.AddScoped<IMedicationService, MedicationService>();
 builder.Services.AddScoped<IParentMedicationRequestService, ParentMedicationRequestService>();
 builder.Services.AddScoped<IMedicalSupplyService, MedicalSupplyService>();
 builder.Services.AddScoped<IVaccinationService, VaccinationService>();
+builder.Services.AddScoped<IHealthConsultationBookingService, HealthConsultationBookingService>();
+
+//DAO
+builder.Services.AddScoped<HealthConsultationBookingDAO>();
 
 builder.Services.AddDistributedMemoryCache();
 

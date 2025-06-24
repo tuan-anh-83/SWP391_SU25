@@ -27,6 +27,7 @@ namespace Repos
 
         Task<int> GetParentCountAsync();
         Task<int> GetNurseCountAsync();
+        Task<List<Account>> GetActiveNursesAsync();
     }
 
 }

@@ -1,4 +1,4 @@
-using BOs.Data;
+﻿using BOs.Data;
 using BOs.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -30,12 +30,12 @@ namespace DAOs
 
         public async Task<List<Medication>> GetAllAsync()
         {
-            return await _context.Medications.ToListAsync();
+            return await _context.Medications.AsNoTracking().ToListAsync();
         }
 
         public async Task<Medication?> GetByIdAsync(int id)
         {
-            return await _context.Medications.FindAsync(id);
+            return await _context.Medications.AsNoTracking().FirstOrDefaultAsync(m => m.MedicationId == id);
         }
 
         public async Task<Medication> CreateAsync(Medication medication)

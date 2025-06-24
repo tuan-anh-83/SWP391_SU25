@@ -103,6 +103,11 @@ namespace Services
             return await _accountRepo.GetNurseCountAsync();
         }
 
+        public async Task<List<Account>> GetActiveNursesAsync()
+        {
+            return await _accountRepo.GetActiveNursesAsync();
+        }
+
         // =================== OTP Cache ===================
 
         public async Task<bool> SaveOtpAsync(string email, string otp, DateTime expiration)

@@ -182,6 +182,7 @@ namespace DAOs
             var students = await _context.Students
                 .Where(s => s.ParentId == parentId)
                 .Include(s => s.Parent)
+                .Include(s => s.Class)
                 .ToListAsync();
 
             var result = new List<(Student, List<MedicalEvent>)>();

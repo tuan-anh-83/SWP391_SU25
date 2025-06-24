@@ -31,6 +31,8 @@ namespace Services
         Task<bool> VerifyOtpAsync(string email, string otp);
         Task InvalidateOtpAsync(string email);
         Task<OtpInfo> GetCurrentOtpAsync(string email);
+
+        Task<List<Account>> GetActiveNursesAsync();
     }
 
 }

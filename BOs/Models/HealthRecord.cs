@@ -18,18 +18,22 @@ namespace BOs.Models
         public string Note { get; set; }
         public double Height { get; set; }
         public double Weight { get; set; }
-        public double BMI { get; set; }
-        public string NutritionStatus { get; set; }
+        //public double BMI { get; set; }
+        //public string NutritionStatus { get; set; }
+
+        public double LeftEye { get; set; }  
+        public double RightEye { get; set; }
+
         public Student Student { get; set; }
         public Account Parent { get; set; }
     }
-    public enum NutritionStatus
+    /*public enum NutritionStatus
     {
         Underweight = 0,
         Normal = 1,
         Overweight = 2,
         Obese = 3,
         ExtremlyObese =4,
-    }
+    }*/
 
 }

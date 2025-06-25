@@ -16,8 +16,10 @@ namespace BOs.Models
         public DateTime Date { get; set; }
         public double? Height { get; set; }
         public double? Weight { get; set; }
-        public double? BMI { get; set; }
-        public string? NutritionStatus { get; set; }
+        /*public double? BMI { get; set; }
+        public string? NutritionStatus { get; set; }*/
+        public double? LeftEye { get; set; }
+        public double? RightEye { get; set; }
         public string? HealthCheckDescription { get; set; }
 
         public Student Student { get; set; }

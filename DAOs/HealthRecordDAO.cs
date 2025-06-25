@@ -68,8 +68,10 @@ namespace DAOs
 
             existing.Height = healthRecord.Height;
             existing.Weight = healthRecord.Weight;
-            existing.BMI = healthRecord.BMI;
-            existing.NutritionStatus = healthRecord.NutritionStatus;
+            //existing.BMI = healthRecord.BMI;
+            //existing.NutritionStatus = healthRecord.NutritionStatus;
+            existing.LeftEye = healthRecord.LeftEye;
+            existing.RightEye = healthRecord.RightEye;
             existing.Note = healthRecord.Note;
 
             await _context.SaveChangesAsync();

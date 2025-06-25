@@ -92,8 +92,10 @@ namespace DAOs
             existing.Date = healthCheck.Date;
             existing.Height = healthCheck.Height;
             existing.Weight = healthCheck.Weight;
-            existing.BMI = healthCheck.BMI;
-            existing.NutritionStatus = healthCheck.NutritionStatus;
+            /*existing.BMI = healthCheck.BMI;
+            existing.NutritionStatus = healthCheck.NutritionStatus;*/
+            existing.LeftEye = healthCheck.LeftEye; 
+            existing.RightEye = healthCheck.RightEye;
             existing.StudentID = healthCheck.StudentID;
             existing.NurseID = healthCheck.NurseID;
             existing.ParentID = healthCheck.ParentID;

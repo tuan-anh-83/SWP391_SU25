@@ -280,8 +280,10 @@ namespace BOs.Data
                 entity.Property(h => h.DateOfBirth).IsRequired();
                 entity.Property(h => h.Height).IsRequired();
                 entity.Property(h => h.Weight).IsRequired();
-                entity.Property(h => h.BMI).IsRequired();
-                entity.Property(h => h.NutritionStatus).IsRequired();
+                //entity.Property(h => h.BMI).IsRequired();
+                //entity.Property(h => h.NutritionStatus).IsRequired();
+                entity.Property(h => h.LeftEye).IsRequired();    // Thêm dòng này
+                entity.Property(h => h.RightEye).IsRequired();
 
                 entity.HasOne(h => h.Student)
                       .WithMany()
@@ -537,8 +539,10 @@ namespace BOs.Data
                 entity.Property(h => h.Date).IsRequired();
                 entity.Property(h => h.Weight);
                 entity.Property(h => h.Height);
-                entity.Property(h => h.BMI);
-                entity.Property(h => h.NutritionStatus);
+                //entity.Property(h => h.BMI);
+                //entity.Property(h => h.NutritionStatus);
+                entity.Property(h => h.LeftEye);    // Thêm dòng này
+                entity.Property(h => h.RightEye);
                 entity.Property(h => h.HealthCheckDescription);
 
                 entity.HasOne(h => h.Student)

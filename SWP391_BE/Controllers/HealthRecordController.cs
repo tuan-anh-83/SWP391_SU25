@@ -71,7 +71,9 @@ namespace SWP391_BE.Controllers
                 StudentCode = dto.StudentCode,
                 Note = dto.Note,
                 Height = dto.Height,
-                Weight = dto.Weight
+                Weight = dto.Weight,
+                LeftEye = dto.LeftEye,  
+                RightEye = dto.RightEye
             };
             var created = await _healthRecordService.CreateHealthRecordAsync(healthRecord);
             return Ok(new { message = "Health record created successfully.", data = created });
@@ -86,6 +88,9 @@ namespace SWP391_BE.Controllers
 
             existing.Height = dto.Height;
             existing.Weight = dto.Weight;
+            existing.Weight = dto.Weight;
+            existing.LeftEye = dto.LeftEye;
+            existing.RightEye = dto.RightEye;
             if (dto.Note != null && dto.Note != "string")
                 existing.Note = dto.Note;
 
@@ -115,8 +120,10 @@ namespace SWP391_BE.Controllers
                 Note = record.Note,
                 Height = record.Height,
                 Weight = record.Weight,
-                BMI = record.BMI,
-                NutritionStatus = record.NutritionStatus
+                LeftEye = record.LeftEye, 
+                RightEye = record.RightEye
+                /*BMI = record.BMI,
+                NutritionStatus = record.NutritionStatus*/
             };
         }
 

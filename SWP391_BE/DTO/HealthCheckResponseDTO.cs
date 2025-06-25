@@ -15,8 +15,10 @@ namespace SWP391_BE.DTO
         public DateTime Date { get; set; }
         public double? Height { get; set; }
         public double? Weight { get; set; }
-        public double? BMI { get; set; }
-        public string? NutritionStatus { get; set; }
+        //public double? BMI { get; set; }
+        //public string? NutritionStatus { get; set; }
+        public double? LeftEye { get; set; }
+        public double? RightEye { get; set; }
         public string? HealthCheckDescription { get; set; }
 
         public HealthCheckResponseDTO(HealthCheck hc)
@@ -29,8 +31,10 @@ namespace SWP391_BE.DTO
             Date = hc.Date;
             Height = hc.Height;
             Weight = hc.Weight;
-            BMI = hc.BMI;
-            NutritionStatus = hc.NutritionStatus;
+            //BMI = hc.BMI;
+            //NutritionStatus = hc.NutritionStatus;
+            LeftEye = hc.LeftEye;
+            RightEye = hc.RightEye;
             HealthCheckDescription = hc.HealthCheckDescription;
         }
     }

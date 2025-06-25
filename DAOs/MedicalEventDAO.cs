@@ -33,6 +33,7 @@ namespace DAOs
         {
             return await _context.MedicalEvents
                 .Include(me => me.Student)
+                .ThenInclude(me => me.Class)
                 .Include(me => me.Nurse)
                 .Include(me => me.MedicalEventMedications).ThenInclude(mem => mem.Medication)
                 .Include(me => me.MedicalEventMedicalSupplies).ThenInclude(mes => mes.MedicalSupply)
@@ -44,6 +45,7 @@ namespace DAOs
         {
             return await _context.MedicalEvents
                 .Include(me => me.Student)
+                .ThenInclude(me => me.Class)
                 .Include(me => me.Nurse)
                 .Include(me => me.MedicalEventMedications).ThenInclude(mem => mem.Medication)
                 .Include(me => me.MedicalEventMedicalSupplies).ThenInclude(mes => mes.MedicalSupply)

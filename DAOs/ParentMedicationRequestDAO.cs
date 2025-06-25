@@ -40,6 +40,7 @@ namespace DAOs
             return await _context.Set<ParentMedicationRequest>()
                 .Include(r => r.Parent)
                 .Include(r => r.Student)
+                .ThenInclude(s => s.Class)
                 .Include(r => r.Medications)
                 .ToListAsync();
         }
@@ -49,6 +50,7 @@ namespace DAOs
             return await _context.Set<ParentMedicationRequest>()
                 .Include(r => r.Parent)
                 .Include(r => r.Student)
+                .ThenInclude(s => s.Class)
                 .Include(r => r.Medications)
                 .FirstOrDefaultAsync(r => r.RequestId == id);
         }
@@ -76,6 +78,7 @@ namespace DAOs
             return await _context.Set<ParentMedicationRequest>()
                 .Include(r => r.Parent)
                 .Include(r => r.Student)
+                .ThenInclude(s => s.Class)
                 .Include(r => r.Medications)
                 .Where(r => r.ParentId == parentId)
                 .OrderByDescending(r => r.DateCreated)

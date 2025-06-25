@@ -29,10 +29,6 @@ namespace Services
             healthRecord.Gender = student.Gender;
             healthRecord.DateOfBirth = student.DateOfBirth;
 
-            // Tính BMI và NutritionStatus
-            healthRecord.BMI = CalculateBMI(healthRecord.Height, healthRecord.Weight);
-            healthRecord.NutritionStatus = DetermineNutritionStatus(healthRecord.BMI);
-
             return await _healthRecordRepo.CreateHealthRecordAsync(healthRecord);
         }
 
@@ -62,9 +58,6 @@ namespace Services
             healthRecord.Gender = student.Gender;
             healthRecord.DateOfBirth = student.DateOfBirth;
 
-            healthRecord.BMI = CalculateBMI(healthRecord.Height, healthRecord.Weight);
-            healthRecord.NutritionStatus = DetermineNutritionStatus(healthRecord.BMI);
-
             return await _healthRecordRepo.UpdateHealthRecordAsync(healthRecord);
         }
 
@@ -73,22 +66,22 @@ namespace Services
             return await _healthRecordRepo.DeleteHealthRecordAsync(id);
         }
 
-        private double CalculateBMI(double height, double weight)
-        {
-            if (height <= 0 || weight <= 0)
-                throw new ArgumentException("Height and weight must be greater than 0");
-            double heightInMeters = height / 100;
-            double bmi = weight / (heightInMeters * heightInMeters);
-            return Math.Round(bmi, 2);
-        }
+        // private double CalculateBMI(double height, double weight)
+        // {
+        //     if (height <= 0 || weight <= 0)
+        //         throw new ArgumentException("Height and weight must be greater than 0");
+        //     double heightInMeters = height / 100;
+        //     double bmi = weight / (heightInMeters * heightInMeters);
+        //     return Math.Round(bmi, 2);
+        // }
 
-        private string DetermineNutritionStatus(double bmi)
-        {
-            if (bmi < 18.5) return "Underweight";
-            if (bmi < 25) return "Normal";
-            if (bmi < 30) return "Overweight";
-            if (bmi < 40) return "Obese";
-            return "ExtremlyObese";
-        }
+        // private string DetermineNutritionStatus(double bmi)
+        // {
+        //     if (bmi < 18.5) return "Underweight";
+        //     if (bmi < 25) return "Normal";
+        //     if (bmi < 30) return "Overweight";
+        //     if (bmi < 40) return "Obese";
+        //     return "ExtremlyObese";
+        // }
     }
 }

@@ -17,7 +17,7 @@ namespace Services
 
         public async Task<HealthCheck> CreateHealthCheckAsync(HealthCheck healthCheck)
         {
-            CalculateBmiAndNutritionStatus(healthCheck);
+            //CalculateBmiAndNutritionStatus(healthCheck);
             return await _repo.CreateHealthCheckAsync(healthCheck);
         }
 
@@ -38,7 +38,7 @@ namespace Services
 
         public async Task<HealthCheck?> UpdateHealthCheckAsync(HealthCheck healthCheck)
         {
-            CalculateBmiAndNutritionStatus(healthCheck);
+            //CalculateBmiAndNutritionStatus(healthCheck);
             return await _repo.UpdateHealthCheckAsync(healthCheck);
         }
 
@@ -51,30 +51,30 @@ namespace Services
         public async Task<int> UpdateParentForFutureHealthChecksAsync(int studentId, int parentId)
             => await _repo.UpdateParentForFutureHealthChecksAsync(studentId, parentId);
 
-        private void CalculateBmiAndNutritionStatus(HealthCheck healthCheck)
-        {
-            if (healthCheck.Height.HasValue && healthCheck.Weight.HasValue && healthCheck.Height.Value > 0)
-            {
-                // Height is expected in meters
-                double calHeight=healthCheck.Height.Value/100;
-                double bmi = healthCheck.Weight.Value / (calHeight * calHeight);
-                healthCheck.BMI = Math.Round(bmi, 2);
-                if (bmi < 18.5)
-                    healthCheck.NutritionStatus = "Underweight";
-                else if (bmi < 25)
-                    healthCheck.NutritionStatus = "Normal";
-                else if (bmi < 30)
-                    healthCheck.NutritionStatus = "Overweight";
-                else if (bmi < 40)
-                    healthCheck.NutritionStatus = "Obese";
-                else
-                    healthCheck.NutritionStatus = "ExtremlyObese";
-            }
-            else
-            {
-                healthCheck.BMI = null;
-                healthCheck.NutritionStatus = null;
-            }
-        }
+        //private void CalculateBmiAndNutritionStatus(HealthCheck healthCheck)
+        //{
+        //    if (healthCheck.Height.HasValue && healthCheck.Weight.HasValue && healthCheck.Height.Value > 0)
+        //    {
+        //        // Height is expected in meters
+        //        double calHeight=healthCheck.Height.Value/100;
+        //        double bmi = healthCheck.Weight.Value / (calHeight * calHeight);
+        //        healthCheck.BMI = Math.Round(bmi, 2);
+        //        if (bmi < 18.5)
+        //            healthCheck.NutritionStatus = "Underweight";
+        //        else if (bmi < 25)
+        //            healthCheck.NutritionStatus = "Normal";
+        //        else if (bmi < 30)
+        //            healthCheck.NutritionStatus = "Overweight";
+        //        else if (bmi < 40)
+        //            healthCheck.NutritionStatus = "Obese";
+        //        else
+        //            healthCheck.NutritionStatus = "ExtremlyObese";
+        //    }
+        //    else
+        //    {
+        //        healthCheck.BMI = null;
+        //        healthCheck.NutritionStatus = null;
+        //    }
+        //}
     }
 }

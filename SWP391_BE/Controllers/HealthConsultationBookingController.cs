@@ -97,8 +97,8 @@ namespace SWP391_BE.Controllers
         }
 
         // Lấy danh sách booking của Parent
-        [HttpGet("Parent")]
-        [Authorize(Roles = "Parent")]
+        [HttpGet("Parent,Nurse")]
+        [Authorize(Roles = "Parent,Nurse")]
         public async Task<IActionResult> GetByParent()
         {
             var accountIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);

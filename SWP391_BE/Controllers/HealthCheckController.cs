@@ -26,21 +26,21 @@ namespace SWP391_BE.Controllers
             _emailService = emailService;
         }
 
-        [HttpPost]
-        [Authorize(Roles = "Nurse,Admin")]
-        public async Task<ActionResult<HealthCheckResponseDTO>> Create([FromBody] CreateHealthCheckDTO dto)
-        {
-            var model = new HealthCheck
-            {
-                NurseID = dto.NurseId,
-                StudentID = dto.StudentId,
-                ParentID = dto.ParentId,
-                Date = System.DateTime.UtcNow,
-                HealthCheckDescription = dto.HealthCheckDescription
-            };
-            var result = await _service.CreateHealthCheckAsync(model);
-            return Ok(new HealthCheckResponseDTO(result));
-        }
+        //[HttpPost]
+        //[Authorize(Roles = "Nurse,Admin")]
+        //public async Task<ActionResult<HealthCheckResponseDTO>> Create([FromBody] CreateHealthCheckDTO dto)
+        //{
+        //    var model = new HealthCheck
+        //    {
+        //        NurseID = dto.NurseId,
+        //        StudentID = dto.StudentId,
+        //        ParentID = dto.ParentId,
+        //        Date = System.DateTime.UtcNow,
+        //        HealthCheckDescription = dto.HealthCheckDescription
+        //    };
+        //    var result = await _service.CreateHealthCheckAsync(model);
+        //    return Ok(new HealthCheckResponseDTO(result));
+        //}
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Nurse,Admin")]
@@ -51,6 +51,8 @@ namespace SWP391_BE.Controllers
             existing.Result = dto.Result;
             existing.Height = dto.Height;
             existing.Weight = dto.Weight;
+            existing.LeftEye = dto.LeftEye;
+            existing.RightEye = dto.RightEye;
             var result = await _service.UpdateHealthCheckAsync(existing);
             if (result == null) return NotFound();
             return Ok(new HealthCheckResponseDTO(result));

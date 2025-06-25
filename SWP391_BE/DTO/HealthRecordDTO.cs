@@ -16,7 +16,10 @@ namespace SWP391_BE.DTO
         public string Note { get; set; }
         public double Height { get; set; }
         public double Weight { get; set; }
-        public double BMI { get; set; }
-        public string NutritionStatus { get; set; }
+        /*public double BMI { get; set; }
+        public string NutritionStatus { get; set; }*/
+        public double LeftEye { get; set; }
+        public double RightEye { get; set; }
+
     }
 } 

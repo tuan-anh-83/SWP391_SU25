@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BOs.Migrations
 {
     /// <inheritdoc />
-    public partial class updateVaccine : Migration
+    public partial class UpdateData : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

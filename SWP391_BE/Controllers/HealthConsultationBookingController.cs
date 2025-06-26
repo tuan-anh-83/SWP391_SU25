@@ -36,6 +36,17 @@ namespace SWP391_BE.Controllers
                 parentId = student?.ParentId;
             }
 
+            // Kiểm tra trùng giờ cho Nurse
+            var existingBookings = await _service.GetBookingsByNurseAsync(dto.NurseId);
+            var conflict = existingBookings.Any(b =>
+                b.Status != "Cancelled" &&
+                Math.Abs((b.ScheduledTime - dto.ScheduledTime).TotalMinutes) < 30
+            );
+            if (conflict)
+            {
+                return BadRequest(new { message = "Nurse đã có lịch trong khoảng 30 phút này. Vui lòng chọn thời gian khác." });
+            }
+
             var booking = new HealthConsultationBooking
             {
                 StudentId = dto.StudentId ?? 0,
@@ -77,6 +88,17 @@ namespace SWP391_BE.Controllers
             else
             {
                 return BadRequest(new { message = "Thiếu mã học sinh (StudentCode)." });
+            }
+
+            // Kiểm tra trùng giờ cho Nurse
+            var existingBookings = await _service.GetBookingsByNurseAsync(dto.NurseId);
+            var conflict = existingBookings.Any(b =>
+                b.Status != "Cancelled" &&
+                Math.Abs((b.ScheduledTime - dto.ScheduledTime).TotalMinutes) < 30
+            );
+            if (conflict)
+            {
+                return BadRequest(new { message = "Nurse đã có lịch trong khoảng 30 phút này. Vui lòng chọn thời gian khác." });
             }
 
             var booking = new HealthConsultationBooking

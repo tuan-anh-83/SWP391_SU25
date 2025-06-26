@@ -97,8 +97,8 @@ namespace SWP391_BE.Controllers
         }
 
         // Lấy danh sách booking của Parent
-        [HttpGet("Parent,Nurse")]
-        [Authorize(Roles = "Parent,Nurse")]
+        [HttpGet("Parent")]
+        [Authorize(Roles = "Parent,Nurse,Admin")]
         public async Task<IActionResult> GetByParent()
         {
             var accountIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
@@ -111,7 +111,7 @@ namespace SWP391_BE.Controllers
 
         // Lấy danh sách booking của Nurse
         [HttpGet("Nurse")]
-        [Authorize(Roles = "Nurse,Admin")]
+        [Authorize(Roles = "Nurse,Admin,Parent")]
         public async Task<IActionResult> GetByNurse()
         {
             var accountIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);

@@ -72,6 +72,7 @@ builder.Services.AddScoped<IParentMedicationRequestRepo, ParentMedicationRequest
 builder.Services.AddScoped<IMedicalSupplyRepo, MedicalSupplyRepo>();
 builder.Services.AddScoped<IVaccinationRepo, VaccinationRepo>();
 builder.Services.AddScoped<IHealthConsultationBookingRepo, HealthConsultationBookingRepo>();
+builder.Services.AddScoped<IDashboardRepo, DashboardRepo>();
 
 
 // Services
@@ -91,6 +92,7 @@ builder.Services.AddScoped<IParentMedicationRequestService, ParentMedicationRequ
 builder.Services.AddScoped<IMedicalSupplyService, MedicalSupplyService>();
 builder.Services.AddScoped<IVaccinationService, VaccinationService>();
 builder.Services.AddScoped<IHealthConsultationBookingService, HealthConsultationBookingService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 //DAO
 builder.Services.AddScoped<HealthConsultationBookingDAO>();

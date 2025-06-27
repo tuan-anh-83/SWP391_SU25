@@ -12,5 +12,7 @@ namespace Repos
         public Task<Class> CreateClassAsync(Class cls) => ClassDAO.Instance.CreateClassAsync(cls);
         public Task<bool> UpdateClassAsync(Class cls) => ClassDAO.Instance.UpdateClassAsync(cls);
         public Task<bool> DeleteClassAsync(int id) => ClassDAO.Instance.DeleteClassAsync(id);
+        public Task<bool> ClassNameExistsAsync(string className, int? excludeId = null)
+            => ClassDAO.Instance.ClassNameExistsAsync(className, excludeId);
     }
 }   

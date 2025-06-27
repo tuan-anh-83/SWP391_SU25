@@ -1,4 +1,5 @@
 using BOs.Models;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -15,6 +16,8 @@ namespace Services
         Task<List<VaccinationCampaign>> GetAllCampaignsAsync();
         Task<VaccinationCampaign?> GetCampaignByIdAsync(int id);
         Task<VaccinationCampaign> CreateCampaignAsync(VaccinationCampaign campaign);
+        Task<bool> CampaignNameExistsAsync(string name);
+        Task<bool> CampaignTimeConflictAsync(DateTime date);
 
         // Consent
         Task<List<VaccinationConsent>> GetConsentsByCampaignAsync(int campaignId);
@@ -23,6 +26,7 @@ namespace Services
         Task<VaccinationConsent?> GetLatestConsentAsync(int campaignId, int studentId);
         Task<VaccinationConsent> UpdateConsentAsync(VaccinationConsent consent);
         Task<VaccinationConsent> CreateConsentAsync(VaccinationConsent consent);
+        Task AutoRejectUnconfirmedConsentsAsync(int campaignId, DateTime campaignDate);
 
         // Record
         Task<List<VaccinationRecord>> GetRecordsByCampaignAsync(int campaignId);

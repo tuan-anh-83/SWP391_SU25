@@ -76,6 +76,18 @@ namespace DAOs
             return campaign;
         }
 
+        public async Task<bool> CampaignNameExistsAsync(string name)
+        {
+            using var context = new DataContext();
+            return await context.VaccinationCampaigns.AnyAsync(c => c.Name == name);
+        }
+
+        public async Task<bool> CampaignTimeConflictAsync(DateTime date)
+        {
+            using var context = new DataContext();
+            return await context.VaccinationCampaigns.AnyAsync(c => c.Date == date);
+        }
+
         // VaccinationConsent
         public async Task<List<VaccinationConsent>> GetConsentsByCampaignAsync(int campaignId)
         {
@@ -136,6 +148,21 @@ namespace DAOs
             context.VaccinationConsents.Update(consent);
             await context.SaveChangesAsync();
             return consent;
+        }
+
+        public async Task AutoRejectUnconfirmedConsentsAsync(int campaignId, DateTime campaignDate)
+        {
+            using var context = new DataContext();
+            var unconfirmedConsents = await context.VaccinationConsents
+                .Where(c => c.CampaignId == campaignId && c.IsAgreed == null)
+                .ToListAsync();
+
+            foreach (var consent in unconfirmedConsents)
+            {
+                consent.IsAgreed = false;
+                consent.DateConfirmed = campaignDate;
+            }
+            await context.SaveChangesAsync();
         }
 
         // VaccinationRecord

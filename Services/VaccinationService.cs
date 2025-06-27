@@ -31,5 +31,14 @@ namespace Services
 
         public async Task<List<VaccinationFollowUp>> GetFollowUpsByRecordAsync(int recordId) => await _dao.GetFollowUpsByRecordAsync(recordId);
         public async Task<VaccinationFollowUp> CreateFollowUpAsync(VaccinationFollowUp followUp) => await _dao.CreateFollowUpAsync(followUp);
+
+        public Task<bool> CampaignNameExistsAsync(string name)
+            => _dao.CampaignNameExistsAsync(name);
+
+        public Task<bool> CampaignTimeConflictAsync(DateTime date)
+            => _dao.CampaignTimeConflictAsync(date);
+
+        public Task AutoRejectUnconfirmedConsentsAsync(int campaignId, DateTime campaignDate)
+            => _dao.AutoRejectUnconfirmedConsentsAsync(campaignId, campaignDate);
     }
 }

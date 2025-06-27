@@ -11,5 +11,6 @@ namespace Repos
         Task<Class> CreateClassAsync(Class cls);
         Task<bool> UpdateClassAsync(Class cls);
         Task<bool> DeleteClassAsync(int id);
+        Task<bool> ClassNameExistsAsync(string className, int? excludeId = null);
     }
 }

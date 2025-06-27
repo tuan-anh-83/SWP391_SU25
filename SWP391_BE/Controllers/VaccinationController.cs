@@ -66,6 +66,12 @@ public class VaccinationController : ControllerBase
     [Authorize(Roles = "Admin,Nurse")]
     public async Task<IActionResult> CreateCampaign([FromBody] VaccinationCampaignCreateDTO dto)
     {
+        if (await _service.CampaignNameExistsAsync(dto.Name))
+            return Conflict(new { message = "Tên chiến dịch đã tồn tại." });
+
+        if (await _service.CampaignTimeConflictAsync(dto.Date))
+            return Conflict(new { message = "Đã có chiến dịch khác trong vòng 30 phút của thời gian này." });
+
         var campaign = new VaccinationCampaign
         {
             Name = dto.Name,
@@ -102,6 +108,11 @@ public class VaccinationController : ControllerBase
     [Authorize(Roles = "Admin,Nurse")]
     public async Task<IActionResult> GetConsentsByCampaign(int campaignId)
     {
+        var campaign = await _service.GetCampaignByIdAsync(campaignId);
+        if (campaign != null && DateTime.UtcNow >= campaign.Date)
+        {
+            await _service.AutoRejectUnconfirmedConsentsAsync(campaign.CampaignId, campaign.Date);
+        }
         var consents = await _service.GetConsentsByCampaignAsync(campaignId);
         return Ok(consents.Select(c => new
         {
@@ -126,6 +137,17 @@ public class VaccinationController : ControllerBase
             return Unauthorized(new { message = "Invalid or missing token." });
 
         var consents = await _service.GetConsentsByParentIdAsync(parentId);
+        var campaignIds = consents.Select(c => c.CampaignId).Distinct().ToList();
+        foreach (var campaignId in campaignIds)
+        {
+            var campaign = await _service.GetCampaignByIdAsync(campaignId);
+            if (campaign != null && DateTime.UtcNow >= campaign.Date)
+            {
+                await _service.AutoRejectUnconfirmedConsentsAsync(campaign.CampaignId, campaign.Date);
+            }
+        }
+        // Lấy lại consents sau khi cập nhật
+        consents = await _service.GetConsentsByParentIdAsync(parentId);
         var result = consents.Select(c => new
         {
             c.ConsentId,
@@ -147,6 +169,14 @@ public class VaccinationController : ControllerBase
         var accountIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
         if (accountIdClaim == null || !int.TryParse(accountIdClaim.Value, out int parentId))
             return Unauthorized(new { message = "Invalid or missing token." });
+
+        // Lấy thông tin campaign để kiểm tra hạn xác nhận
+        var campaign = await _service.GetCampaignByIdAsync(dto.CampaignId);
+        if (campaign == null)
+            return NotFound(new { message = "Không tìm thấy chiến dịch." });
+
+        if (DateTime.UtcNow >= campaign.Date)
+            return BadRequest(new { message = "Đã quá hạn xác nhận. Bạn không thể thay đổi quyết định sau thời gian diễn ra chiến dịch." });
 
         // Kiểm tra consent đã tồn tại chưa (theo campaignId, studentId, parentId)
         var existingConsent = await _service.GetConsentAsync(dto.CampaignId, dto.StudentId, parentId);

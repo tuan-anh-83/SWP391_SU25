@@ -42,6 +42,9 @@ namespace SWP391_BE.Controllers
         [HttpPost("CreateClass")]
         public async Task<IActionResult> Create([FromBody] ClassCreateDTO dto)
         {
+            if (await _classService.ClassNameExistsAsync(dto.ClassName))
+                return Conflict(new { message = "Class name already exists." });
+
             var cls = new Class { ClassName = dto.ClassName };
             var created = await _classService.CreateClassAsync(cls);
             return Ok(new { message = "Class created successfully.", data = new ClassDTO { ClassId = created.ClassId, ClassName = created.ClassName } });
@@ -50,6 +53,9 @@ namespace SWP391_BE.Controllers
         [HttpPut("UpdateClass/{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] ClassUpdateDTO dto)
         {
+            if (await _classService.ClassNameExistsAsync(dto.ClassName, id))
+                return Conflict(new { message = "Class name already exists." });
+
             var cls = new Class { ClassId = id, ClassName = dto.ClassName };
             var result = await _classService.UpdateClassAsync(cls);
             if (!result)

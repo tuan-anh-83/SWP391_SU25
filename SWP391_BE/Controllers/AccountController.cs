@@ -675,8 +675,14 @@ namespace SWP391_BE.Controllers
         public async Task<IActionResult> DeleteAccount(int id)
         {
             var account = await _accountService.GetAccountByIdAsync(id);
+            if (account == null)
+                return NotFound("Account not found.");
+
             bool result = await _accountService.DeleteAccountAsync(id);
-            return NotFound("Account not found.");
+            if (!result)
+                return StatusCode(500, "Failed to delete account.");
+
+            return Ok(new { message = "Account deleted successfully." });
         }
 
         #endregion

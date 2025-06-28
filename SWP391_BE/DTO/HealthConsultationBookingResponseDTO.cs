@@ -7,6 +7,7 @@ namespace SWP391_BE.DTO
         public int BookingId { get; set; }
         public int StudentId { get; set; }
         public string StudentName { get; set; }
+        public string ClassName { get; set; }
         public int NurseId { get; set; }
         public string NurseName { get; set; }
         public int ParentId { get; set; }
@@ -20,6 +21,7 @@ namespace SWP391_BE.DTO
             BookingId = b.BookingId;
             StudentId = b.StudentId;
             StudentName = b.Student?.Fullname;
+            ClassName = b.Student?.Class?.ClassName;
             NurseId = b.NurseId;
             NurseName = b.Nurse?.Fullname;
             ParentId = b.ParentId;

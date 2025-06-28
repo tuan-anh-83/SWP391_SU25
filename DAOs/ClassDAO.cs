@@ -62,5 +62,12 @@ namespace DAOs
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<bool> ClassNameExistsAsync(string className, int? excludeId = null)
+        {
+            if (excludeId.HasValue)
+                return await _context.Classes.AnyAsync(c => c.ClassName == className && c.ClassId != excludeId.Value);
+            return await _context.Classes.AnyAsync(c => c.ClassName == className);
+        }
     }
 }

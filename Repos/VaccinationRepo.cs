@@ -16,6 +16,8 @@ namespace Repos
         public Task<List<VaccinationCampaign>> GetAllCampaignsAsync() => VaccinationDAO.Instance.GetAllCampaignsAsync();
         public Task<VaccinationCampaign?> GetCampaignByIdAsync(int id) => VaccinationDAO.Instance.GetCampaignByIdAsync(id);
         public Task<VaccinationCampaign> CreateCampaignAsync(VaccinationCampaign campaign) => VaccinationDAO.Instance.CreateCampaignAsync(campaign);
+        public Task<bool> CampaignNameExistsAsync(string name) => VaccinationDAO.Instance.CampaignNameExistsAsync(name);
+        public Task<bool> CampaignTimeConflictAsync(DateTime date) => VaccinationDAO.Instance.CampaignTimeConflictAsync(date);
 
         // Consent
         public Task<List<VaccinationConsent>> GetConsentsByCampaignAsync(int campaignId) => VaccinationDAO.Instance.GetConsentsByCampaignAsync(campaignId);
@@ -24,6 +26,8 @@ namespace Repos
         public Task<VaccinationConsent?> GetLatestConsentAsync(int campaignId, int studentId) => VaccinationDAO.Instance.GetLatestConsentAsync(campaignId, studentId);
         public Task<VaccinationConsent> UpdateConsentAsync(VaccinationConsent consent) => VaccinationDAO.Instance.UpdateConsentAsync(consent);
         public Task<VaccinationConsent> CreateConsentAsync(VaccinationConsent consent) => VaccinationDAO.Instance.CreateConsentAsync(consent);
+        public Task AutoRejectUnconfirmedConsentsAsync(int campaignId, DateTime campaignDate)
+            => VaccinationDAO.Instance.AutoRejectUnconfirmedConsentsAsync(campaignId, campaignDate);
 
         // Record
         public Task<List<VaccinationRecord>> GetRecordsByCampaignAsync(int campaignId) => VaccinationDAO.Instance.GetRecordsByCampaignAsync(campaignId);

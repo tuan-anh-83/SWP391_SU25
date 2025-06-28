@@ -36,6 +36,17 @@ namespace SWP391_BE.Controllers
                 parentId = student?.ParentId;
             }
 
+            // Kiểm tra trùng giờ cho Nurse
+            var existingBookings = await _service.GetBookingsByNurseAsync(dto.NurseId);
+            var conflict = existingBookings.Any(b =>
+                b.Status != "Cancelled" &&
+                Math.Abs((b.ScheduledTime - dto.ScheduledTime).TotalMinutes) < 30
+            );
+            if (conflict)
+            {
+                return BadRequest(new { message = "Nurse đã có lịch trong khoảng 30 phút này. Vui lòng chọn thời gian khác." });
+            }
+
             var booking = new HealthConsultationBooking
             {
                 StudentId = dto.StudentId ?? 0,
@@ -79,6 +90,17 @@ namespace SWP391_BE.Controllers
                 return BadRequest(new { message = "Thiếu mã học sinh (StudentCode)." });
             }
 
+            // Kiểm tra trùng giờ cho Nurse
+            var existingBookings = await _service.GetBookingsByNurseAsync(dto.NurseId);
+            var conflict = existingBookings.Any(b =>
+                b.Status != "Cancelled" &&
+                Math.Abs((b.ScheduledTime - dto.ScheduledTime).TotalMinutes) < 30
+            );
+            if (conflict)
+            {
+                return BadRequest(new { message = "Nurse đã có lịch trong khoảng 30 phút này. Vui lòng chọn thời gian khác." });
+            }
+
             var booking = new HealthConsultationBooking
             {
                 StudentId = studentId,
@@ -97,8 +119,8 @@ namespace SWP391_BE.Controllers
         }
 
         // Lấy danh sách booking của Parent
-        [HttpGet("Parent,Nurse")]
-        [Authorize(Roles = "Parent,Nurse")]
+        [HttpGet("Parent")]
+        [Authorize(Roles = "Parent,Nurse,Admin")]
         public async Task<IActionResult> GetByParent()
         {
             var accountIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
@@ -111,7 +133,7 @@ namespace SWP391_BE.Controllers
 
         // Lấy danh sách booking của Nurse
         [HttpGet("Nurse")]
-        [Authorize(Roles = "Nurse,Admin")]
+        [Authorize(Roles = "Nurse,Admin,Parent")]
         public async Task<IActionResult> GetByNurse()
         {
             var accountIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);

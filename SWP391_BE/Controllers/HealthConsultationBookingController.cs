@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 using Services;
 using SWP391_BE.DTO;
 using BOs.Models;
+using static AgoraIO.Rtc.RtcTokenBuilder;
+using AgoraIO.Rtc;
 
 namespace SWP391_BE.Controllers
 {
@@ -198,6 +199,58 @@ namespace SWP391_BE.Controllers
                 Image = n.Image != null ? Convert.ToBase64String(n.Image) : null
             });
             return Ok(result);
+        }
+
+        [HttpGet("{bookingId}/agora-token")]
+        [Authorize]
+        public async Task<IActionResult> GetAgoraToken(int bookingId)
+        {
+            try
+            {
+                // Verify the booking exists and user has access
+                var booking = await _service.GetBookingByIdAsync(bookingId);
+                if (booking == null)
+                {
+                    return NotFound("Booking not found");
+                }
+
+                // Get current user ID from JWT token
+                var accountIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                if (accountIdClaim == null || !int.TryParse(accountIdClaim.Value, out int currentUserId))
+                    return Unauthorized("Invalid or missing token.");
+
+                
+                if (booking.ParentId != currentUserId && booking.NurseId != currentUserId)
+                {
+                    return Forbid("Access denied");
+                }
+
+                
+                var channelName = $"consultation_{bookingId}";
+
+               
+                var uid = (uint)currentUserId;
+
+              
+                var appId = "3e9d60aafb8645a69fbb30b9a42045bc";
+                var appCertificate = "fd8b1de747e64c09841cd3dab19eaffd"; 
+
+                var builder = new RtcTokenBuilder();
+                var timeStamp = (uint)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() + 3600); 
+                var token = builder.BuildToken(appId, appCertificate, channelName, true, timeStamp);
+
+                return Ok(new
+                {
+                    token = token,
+                    channelName = channelName,
+                    uid = uid,
+                    appId = appId
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Failed to generate token");
+            }
         }
     }
 }

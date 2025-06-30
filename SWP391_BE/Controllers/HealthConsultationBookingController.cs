@@ -219,24 +219,24 @@ namespace SWP391_BE.Controllers
                 if (accountIdClaim == null || !int.TryParse(accountIdClaim.Value, out int currentUserId))
                     return Unauthorized("Invalid or missing token.");
 
-                // Verify user has access to this booking (parent or nurse)
+                
                 if (booking.ParentId != currentUserId && booking.NurseId != currentUserId)
                 {
                     return Forbid("Access denied");
                 }
 
-                // Generate channel name using booking ID
+                
                 var channelName = $"consultation_{bookingId}";
 
-                // Generate UID (unique for each user)
+               
                 var uid = (uint)currentUserId;
 
-                // Generate token using RtcTokenBuilder from Agora package
-                var appId = "3e9d60aafb8645a69fbb30b9a42045bc"; // Your Agora App ID
-                var appCertificate = "fd8b1de747e64c09841cd3dab19eaffd"; // Your Agora App Certificate
+              
+                var appId = "3e9d60aafb8645a69fbb30b9a42045bc";
+                var appCertificate = "fd8b1de747e64c09841cd3dab19eaffd"; 
 
                 var builder = new RtcTokenBuilder();
-                var timeStamp = (uint)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() + 3600); // 1 hour from now
+                var timeStamp = (uint)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() + 3600); 
                 var token = builder.BuildToken(appId, appCertificate, channelName, true, timeStamp);
 
                 return Ok(new

@@ -16,11 +16,14 @@ namespace SWP391_BE.Controllers
     {
         private readonly IMedicalEventService _medicalEventService;
         private readonly IAccountService _accountService;
+        private readonly IStudentService _studentService;
 
-        public MedicalEventController(IMedicalEventService medicalEventService, IAccountService accountService)
+        public MedicalEventController(IMedicalEventService medicalEventService, IAccountService accountService, IStudentService studentService)
         {
             _medicalEventService = medicalEventService;
             _accountService = accountService;
+            _studentService = studentService;
+
         }
 
         [HttpGet("GetAllMedicalEvents")]
@@ -110,9 +113,14 @@ namespace SWP391_BE.Controllers
             if (!account.Status.Equals("Active", StringComparison.OrdinalIgnoreCase))
                 return Unauthorized(new { message = "Account is not active." });
 
+            // Lấy Student theo StudentCode
+            var student = await _studentService.GetStudentByCodeAsync(dto.StudentCode);
+            if (student == null)
+                return NotFound(new { message = "Student not found with the provided code." });
+
             var medicalEvent = new MedicalEvent
             {
-                StudentId = dto.StudentId,
+                StudentId = student.StudentId,
                 NurseId = account.AccountID,
                 Type = dto.Type.Trim(),
                 Description = dto.Description?.Trim(),

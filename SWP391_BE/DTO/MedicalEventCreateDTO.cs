@@ -7,7 +7,7 @@ namespace SWP391_BE.DTO;
 public class MedicalEventCreateDTO
 {
     [Required]
-    public int StudentId { get; set; }
+    public string StudentCode { get; set; }
     [Required]
     public string Type { get; set; }
     public string? Description { get; set; }

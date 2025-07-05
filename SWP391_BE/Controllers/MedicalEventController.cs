@@ -37,8 +37,8 @@ namespace SWP391_BE.Controllers
                 me.MedicalEventId,
                 me.StudentId,
                 StudentName = me.Student?.Fullname,
-                StudentCode = me.Student?.StudentCode,         
-                ClassName = me.Student?.Class?.ClassName,      
+                StudentCode = me.Student?.StudentCode,
+                ClassName = me.Student?.Class?.ClassName,
                 me.NurseId,
                 NurseName = me.Nurse?.Fullname,
                 me.Type,
@@ -74,8 +74,8 @@ namespace SWP391_BE.Controllers
                 medicalEvent.MedicalEventId,
                 medicalEvent.StudentId,
                 StudentName = medicalEvent.Student?.Fullname,
-                StudentCode = medicalEvent.Student?.StudentCode,         
-                ClassName = medicalEvent.Student?.Class?.ClassName,      
+                StudentCode = medicalEvent.Student?.StudentCode,
+                ClassName = medicalEvent.Student?.Class?.ClassName,
                 medicalEvent.NurseId,
                 NurseName = medicalEvent.Nurse?.Fullname,
                 medicalEvent.Type,
@@ -263,6 +263,60 @@ namespace SWP391_BE.Controllers
                 }).ToList(),
                 Message = d.events.Any() ? null : "Hiện chưa có sự kiện y tế"
             });
+
+            return Ok(result);
+        }
+
+        [HttpGet("Parent/MedicalEvents/{studentId}")]
+        [Authorize(Roles = "Parent")]
+        public async Task<IActionResult> GetMedicalEventsForParentByStudent(int studentId)
+        {
+            var accountIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (accountIdClaim == null || !int.TryParse(accountIdClaim.Value, out int parentId))
+                return Unauthorized(new { message = "Invalid or missing token." });
+
+            // Kiểm tra studentId có thuộc parent không
+            var student = await _studentService.GetStudentByIdAsync(studentId);
+            if (student == null || student.ParentId != parentId)
+                return StatusCode(403, new { message = "Student does not belong to the current parent." });
+
+            // Lấy các sự kiện y tế của student này
+            var data = await _medicalEventService.GetMedicalEventsByParentIdAsync(parentId);
+            var studentData = data.FirstOrDefault(d => d.student.StudentId == studentId);
+
+            var events = (studentData.student == null || studentData.events == null)
+                ? new List<MedicalEvent>()
+                : studentData.events;
+
+            var result = new
+            {
+                StudentId = studentId,
+                StudentName = student?.Fullname ?? string.Empty,
+                StudentCode = student?.StudentCode ?? string.Empty,
+                ClassName = student?.Class?.ClassName ?? string.Empty,
+                Events = events.Select(me => new
+                {
+                    me.MedicalEventId,
+                    me.Type,
+                    me.Description,
+                    me.Note,
+                    me.Date,
+                    NurseName = me.Nurse?.Fullname ?? string.Empty,
+                    Medications = me.MedicalEventMedications?.Select(mem => new
+                    {
+                        mem.MedicationId,
+                        mem.Medication?.Name,
+                        mem.QuantityUsed
+                    }).ToList(),
+                    MedicalSupplies = me.MedicalEventMedicalSupplies?.Select(mes => new
+                    {
+                        mes.MedicalSupplyId,
+                        mes.MedicalSupply?.Name,
+                        mes.QuantityUsed
+                    }).ToList()
+                }).ToList(),
+                Message = events.Any() ? null : "Hiện chưa có sự kiện y tế"
+            };
 
             return Ok(result);
         }

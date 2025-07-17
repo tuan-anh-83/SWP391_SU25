@@ -120,11 +120,17 @@ public class VaccinationController : ControllerBase
             c.CampaignId,
             c.StudentId,
             StudentName = c.Student?.Fullname,
+            StudentCode = c.Student?.StudentCode,
             c.ParentId,
             ParentName = c.Parent?.Fullname,
             c.IsAgreed,
             c.Note,
-            c.DateConfirmed
+            c.DateConfirmed,
+            Class = new
+            {
+                c.Student?.Class?.ClassId,
+                c.Student?.Class?.ClassName
+            }
         }));
     }
 

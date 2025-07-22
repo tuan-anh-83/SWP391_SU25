@@ -921,7 +921,7 @@ namespace DAOs
 
             var totalNurses = nurses.Count;
 
-            // Lấy dữ liệu HealthChecks
+            // Lấy dữ liệu HealthChecks - đảm bảo sử dụng NurseID
             var healthChecksQuery = _context.HealthChecks
                 .AsNoTracking()
                 .Where(h => h.Date >= startDate && h.Date <= DateTime.Now.Date)
@@ -942,7 +942,7 @@ namespace DAOs
                 .Distinct()
                 .ToListAsync();
 
-            // Lấy dữ liệu MedicalEvents
+            // Lấy dữ liệu MedicalEvents - đảm bảo sử dụng NurseId
             var medicalEventsQuery = _context.MedicalEvents
                 .AsNoTracking()
                 .Where(m => m.Date >= startDate && m.Date <= DateTime.Now.Date)
@@ -963,7 +963,7 @@ namespace DAOs
                 .Distinct()
                 .ToListAsync();
 
-            // Lấy dữ liệu Consultations
+            // Lấy dữ liệu Consultations - đảm bảo sử dụng NurseId
             var consultationsQuery = _context.HealthConsultationBookings
                 .AsNoTracking()
                 .Where(c => c.ScheduledTime >= startDate && c.ScheduledTime <= DateTime.Now.Date)
@@ -991,40 +991,72 @@ namespace DAOs
 
             var medicationApprovalsCount = await medicationApprovalsQuery.CountAsync();
 
-            // Xử lý dữ liệu ByNurse
-            var byNurseResult = nurses.Select(n =>
+            // Xử lý dữ liệu ByNurse - đảm bảo mỗi y tá có dữ liệu riêng biệt
+            var byNurseResult = new List<(string NurseName, int HealthChecks, int MedicalEvents, int Consultations, int WorkingDays, double AveragePerDay)>();
+
+            foreach (var nurse in nurses)
             {
-                var healthChecks = healthChecksData.FirstOrDefault(h => h.NurseId == n.AccountID);
-                var medicalEvents = medicalEventsData.FirstOrDefault(m => m.NurseId == n.AccountID);
-                var consultations = consultationsData.FirstOrDefault(c => c.NurseId == n.AccountID);
+                try
+                {
+                    // Tìm dữ liệu cho từng y tá cụ thể
+                    var healthChecks = healthChecksData.FirstOrDefault(h => h.NurseId == nurse.AccountID);
+                    var medicalEvents = medicalEventsData.FirstOrDefault(m => m.NurseId == nurse.AccountID);
+                    var consultations = consultationsData.FirstOrDefault(c => c.NurseId == nurse.AccountID);
 
-                var healthCheckCount = healthChecks?.Count ?? 0;
-                var medicalEventCount = medicalEvents?.Count ?? 0;
-                var consultationCount = consultations?.Count ?? 0;
+                    var healthCheckCount = healthChecks?.Count ?? 0;
+                    var medicalEventCount = medicalEvents?.Count ?? 0;
+                    var consultationCount = consultations?.Count ?? 0;
 
-                // Tính số ngày làm việc
-                var workingDays = healthCheckDates
-                    .Where(h => h.NurseID == n.AccountID)
-                    .Select(h => h.Date)
-                    .Union(medicalEventDates.Where(m => m.NurseId == n.AccountID).Select(m => m.Date))
-                    .Union(consultationDates.Where(c => c.NurseId == n.AccountID).Select(c => c.Date))
-                    .Distinct()
-                    .Count();
+                    // Tính số ngày làm việc cho từng y tá riêng biệt
+                    var workingDays = healthCheckDates
+                        .Where(h => h.NurseID == nurse.AccountID)
+                        .Select(h => h.Date)
+                        .Union(medicalEventDates.Where(m => m.NurseId == nurse.AccountID).Select(m => m.Date))
+                        .Union(consultationDates.Where(c => c.NurseId == nurse.AccountID).Select(c => c.Date))
+                        .Distinct()
+                        .Count();
 
-                var totalActivities = healthCheckCount + medicalEventCount + consultationCount;
-                var averagePerDay = workingDays > 0 ? Math.Round((double)totalActivities / workingDays, 2) : 0.0;
+                    var totalActivities = healthCheckCount + medicalEventCount + consultationCount;
+                    var averagePerDay = workingDays > 0 ? Math.Round((double)totalActivities / workingDays, 2) : 0.0;
 
-                return (
-                    NurseName: n.Fullname ?? "Unknown",
-                    HealthChecks: healthCheckCount,
-                    MedicalEvents: medicalEventCount,
-                    Consultations: consultationCount,
-                    WorkingDays: workingDays,
-                    AveragePerDay: averagePerDay
-                );
-            }).ToList();
+                    var nurseData = (
+                        NurseName: nurse.Fullname ?? "Unknown",
+                        HealthChecks: healthCheckCount,
+                        MedicalEvents: medicalEventCount,
+                        Consultations: consultationCount,
+                        WorkingDays: workingDays,
+                        AveragePerDay: averagePerDay
+                    );
 
-            // Tính WorkloadDistribution
+                    byNurseResult.Add(nurseData);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error processing nurse {nurse.AccountID} ({nurse.Fullname}): {ex.Message}");
+                }
+            }
+
+            // Final validation
+            // Console.WriteLine($"Final result count: {byNurseResult.Count}");
+            // foreach (var result in byNurseResult)
+            // {
+            //     Console.WriteLine($"Final: {result.NurseName} - HC:{result.HealthChecks}, ME:{result.MedicalEvents}, C:{result.Consultations}");
+            // }
+
+            // Ensure we have the correct number of nurses
+            // if (byNurseResult.Count != nurses.Count)
+            // {
+            //     Console.WriteLine($"Warning: Result count ({byNurseResult.Count}) doesn't match nurse count ({nurses.Count})");
+            // }
+
+            // Validate that each nurse has unique data
+            var nurseNames = byNurseResult.Select(r => r.NurseName).Distinct().ToList();
+            if (nurseNames.Count != byNurseResult.Count)
+            {
+                // Console.WriteLine($"Warning: Duplicate nurse names found. Unique names: {nurseNames.Count}, Total results: {byNurseResult.Count}");
+            }
+
+            // Tính WorkloadDistribution - tổng hợp tất cả hoạt động
             var workloadDistribution = (
                 HealthChecks: healthChecksData.Sum(h => h.Count),
                 MedicalEvents: medicalEventsData.Sum(m => m.Count),

@@ -238,7 +238,7 @@ namespace SWP391_BE.Controllers
                 return StatusCode(500, new { message = "An error occurred", error = ex.Message });
             }
         }
-        // API: Th?ng kê s? ki?n y t? theo th?i gian
+        // API: Th?ng kï¿½ s? ki?n y t? theo th?i gian
         [HttpGet("analytics/medical/events-timeline")]
         public async Task<IActionResult> GetMedicalEventsTimeline([FromQuery] string eventType = null, [FromQuery] string period = "30days")
         {
@@ -255,9 +255,9 @@ namespace SWP391_BE.Controllers
                     return BadRequest(new { message = "Invalid period. Must be 30days or 3months." });
                 }
 
-                if (eventType != null && !new[] { "tai n?n", "d?ch b?nh", "s?t", "khác" }.Contains(eventType.ToLower()))
+                if (eventType != null && !new[] { "tai n?n", "d?ch b?nh", "s?t", "khï¿½c" }.Contains(eventType.ToLower()))
                 {
-                    return BadRequest(new { message = "Invalid eventType. Must be tai n?n, d?ch b?nh, s?t, or khác." });
+                    return BadRequest(new { message = "Invalid eventType. Must be tai n?n, d?ch b?nh, s?t, or khï¿½c." });
                 }
 
                 var timelineData = await _dashboardService.GetMedicalEventsTimelineAsync(accountId, eventType, period);
@@ -329,7 +329,7 @@ namespace SWP391_BE.Controllers
             }
         }
 
-        // API: Th?ng kê s? d?ng v?t t? y t?
+        // API: Th?ng kï¿½ s? d?ng v?t t? y t?
         [HttpGet("analytics/medical/supply-usage")]
         public async Task<IActionResult> GetSupplyUsage([FromQuery] string period = "1month")
         {
@@ -380,7 +380,7 @@ namespace SWP391_BE.Controllers
                 return StatusCode(500, new { message = "An error occurred", error = ex.Message });
             }
         }
-        // API: T? l? tiêm ch?ng theo chi?n d?ch và l?p
+        // API: T? l? tiï¿½m ch?ng theo chi?n d?ch vï¿½ l?p
         [HttpGet("analytics/vaccination/coverage")]
         public async Task<IActionResult> GetVaccinationCoverage([FromQuery] int? campaignId = null, [FromQuery] int? classId = null)
         {
@@ -423,7 +423,7 @@ namespace SWP391_BE.Controllers
             }
         }
 
-        // API: Hi?u qu? chi?n d?ch tiêm ch?ng
+        // API: Hi?u qu? chi?n d?ch tiï¿½m ch?ng
         [HttpGet("analytics/vaccination/campaign-effectiveness")]
         public async Task<IActionResult> GetCampaignEffectiveness([FromQuery] int? campaignId = null)
         {
@@ -466,7 +466,7 @@ namespace SWP391_BE.Controllers
             }
         }
 
-        // API: Th?ng kê l?ch h?n t? v?n
+        // API: Th?ng kï¿½ l?ch h?n t? v?n
         [HttpGet("analytics/consultations/statistics-in-1month")]
         public async Task<IActionResult> GetConsultationStatistics([FromQuery] string period = "1month")
         {
@@ -514,7 +514,7 @@ namespace SWP391_BE.Controllers
             }
         }
 
-        // API: Th?ng kê yêu c?u gui thu?c
+        // API: Th?ng kï¿½ yï¿½u c?u gui thu?c
         [HttpGet("analytics/medication/requests-in-1month")]
         public async Task<IActionResult> GetMedicationRequests([FromQuery] string period = "1month")
         {
@@ -558,7 +558,7 @@ namespace SWP391_BE.Controllers
             }
         }
 
-        // API: Th?ng kê ho?t ??ng c?a y tá
+        // API: Thá»‘ng kÃª hoáº¡t Ä‘á»™ng cá»§a y tÃ¡
         [HttpGet("analytics/nurses/activity-in-1month")]
         public async Task<IActionResult> GetNurseActivity([FromQuery] int? nurseId = null, [FromQuery] string period = "1month")
         {
@@ -576,6 +576,7 @@ namespace SWP391_BE.Controllers
                 }
 
                 var activityData = await _dashboardService.GetNurseActivityAsync(accountId, nurseId, period);
+                
                 var response = new
                 {
                     TotalNurses = activityData.TotalNurses,
@@ -609,7 +610,70 @@ namespace SWP391_BE.Controllers
             }
         }
 
-        // API: Báo cáo s?c kh?e ??nh k?
+        // Test endpoint for debugging nurse activity
+        [HttpGet("analytics/nurses/activity-test")]
+        public async Task<IActionResult> GetNurseActivityTest([FromQuery] int? nurseId = null, [FromQuery] string period = "1month")
+        {
+            try
+            {
+                var accountIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (accountIdClaim == null || !int.TryParse(accountIdClaim.Value, out int accountId))
+                {
+                    return Unauthorized(new { message = "Invalid or missing token." });
+                }
+
+                if (!new[] { "1month" }.Contains(period.ToLower()))
+                {
+                    return BadRequest(new { message = "Invalid period. Must be 1month." });
+                }
+
+                var activityData = await _dashboardService.GetNurseActivityAsync(accountId, nurseId, period);
+                
+                // Create a detailed response for debugging
+                var debugResponse = new
+                {
+                    TotalNurses = activityData.TotalNurses,
+                    ByNurse = activityData.ByNurse.Select((n, index) => new
+                    {
+                        Index = index,
+                        NurseName = n.NurseName,
+                        HealthChecks = n.HealthChecks,
+                        MedicalEvents = n.MedicalEvents,
+                        Consultations = n.Consultations,
+                        WorkingDays = n.WorkingDays,
+                        AveragePerDay = n.AveragePerDay,
+                        TotalActivities = n.HealthChecks + n.MedicalEvents + n.Consultations
+                    }).ToList(),
+                    WorkloadDistribution = new
+                    {
+                        TotalHealthChecks = activityData.WorkloadDistribution.HealthChecks,
+                        TotalMedicalEvents = activityData.WorkloadDistribution.MedicalEvents,
+                        TotalConsultations = activityData.WorkloadDistribution.Consultations,
+                        TotalMedicationApprovals = activityData.WorkloadDistribution.MedicationApprovals
+                    },
+                    Summary = new
+                    {
+                        TotalNursesWithData = activityData.ByNurse.Count(n => n.HealthChecks > 0 || n.MedicalEvents > 0 || n.Consultations > 0),
+                        TotalNursesWithoutData = activityData.ByNurse.Count(n => n.HealthChecks == 0 && n.MedicalEvents == 0 && n.Consultations == 0),
+                        AverageHealthChecksPerNurse = activityData.ByNurse.Any() ? activityData.ByNurse.Average(n => n.HealthChecks) : 0,
+                        AverageMedicalEventsPerNurse = activityData.ByNurse.Any() ? activityData.ByNurse.Average(n => n.MedicalEvents) : 0,
+                        AverageConsultationsPerNurse = activityData.ByNurse.Any() ? activityData.ByNurse.Average(n => n.Consultations) : 0
+                    }
+                };
+
+                return Ok(debugResponse);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred", error = ex.Message });
+            }
+        }
+
+        // API: Bï¿½o cï¿½o s?c kh?e ??nh k?
         [HttpGet("reports/health-summary")]
         public async Task<IActionResult> GetHealthSummary([FromQuery] string period = "monthly", [FromQuery] string format = "summary")
         {
@@ -679,7 +743,7 @@ namespace SWP391_BE.Controllers
             }
         }
 
-        // API: So sánh ch? s? gi?a hai kho?ng th?i gian
+        // API: So sï¿½nh ch? s? gi?a hai kho?ng th?i gian
         [HttpGet("analytics/comparison")]
         public async Task<IActionResult> GetComparison([FromQuery] string metric = "health_events", [FromQuery] string period1 = "monthly", [FromQuery] string period2 = "monthly")
         {
